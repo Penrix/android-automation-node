@@ -4,6 +4,8 @@
 
 当前第一台节点是 Redmi K20 Pro。这个仓库保存的不只是脚本，也保存围绕这台节点形成的设计认知、决策过程、任务边界和后续实现。
 
+> Coding Agent / Codex 进入仓库后先读 [START-HERE.md](START-HERE.md) 和 [AGENTS.md](AGENTS.md)。
+
 ## START HERE
 
 第一次进入仓库，按这个顺序阅读：
@@ -22,6 +24,8 @@
    哪些东西我们自己拥有，哪些优先复用上游，什么时候才值得 fork。
 7. [docs/06-tooling-research-notes.md](docs/06-tooling-research-notes.md)  
    GKD、AutoJs6、uiautomator2、Airtest 等已经做过的工具研究，防止以后重复调查和回退认知。
+8. [docs/07-coding-standards.md](docs/07-coding-standards.md)  
+   从 ai-coding-cognition 引入并针对 Android 真机自动化收窄的编程约束。
 
 ## 当前核心判断
 

@@ -42,6 +42,8 @@
    AidLux 专用 requirements、ARM64 mxnet/PyAV 风险和只读 preflight。
 16. [docs/15-pre-live-gate-status.md](docs/15-pre-live-gate-status.md)  
    上机前哪些已经准备、哪些必须留到 Final Live 的冻结状态。
+17. [docs/16-community-reality-playbook.md](docs/16-community-reality-playbook.md)  
+   真实用户踩坑、手机端 Alas/MFABD2/AutoJs6 落地方式，以及最终上机逐层执行单。
 
 ## 当前核心判断
 

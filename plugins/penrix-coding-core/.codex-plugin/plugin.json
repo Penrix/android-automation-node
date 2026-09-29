@@ -1,0 +1,43 @@
+{
+  "name": "penrix-coding-core",
+  "version": "0.3.0",
+  "description": "Coding-agent operating contract for a non-programmer product owner: intent grounding, task-contract reality checks, complexity admission gates, evidence classes, specialist-skill routing, runtime verification, and plain-language handoff.",
+  "author": {
+    "name": "Penrix",
+    "url": "https://github.com/Penrix"
+  },
+  "homepage": "https://github.com/Penrix/ai-coding-cognition",
+  "repository": "https://github.com/Penrix/ai-coding-cognition",
+  "license": "MIT",
+  "keywords": [
+    "coding-agent",
+    "non-programmer-owner",
+    "verification",
+    "workflow",
+    "codex",
+    "review",
+    "reality-check",
+    "simplicity",
+    "overengineering"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Penrix Coding Core",
+    "shortDescription": "Owner intent, complexity gates, reality checks, and evidence-based handoff",
+    "longDescription": "Use Penrix Coding Core to keep product authority with a non-programmer owner while the coding agent owns engineering decisions. It routes engineering work to specialist skills, re-verifies LLM-generated task contracts against current reality, requires evidence before fallbacks/abstractions/retries and other new mechanisms enter the codebase, enforces honest runtime evidence classes, and reports outcomes in plain language.",
+    "developerName": "Penrix",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/Penrix/ai-coding-cognition",
+    "defaultPrompt": [
+      "Use Penrix Coding Core for this coding task.",
+      "Check this task contract against repository reality before implementing.",
+      "Before adding defensive or generalized machinery, run the complexity gate and remove anything without current evidence.",
+      "Verify this fix in the strongest available real environment."
+    ]
+  }
+}

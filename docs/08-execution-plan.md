@@ -1,474 +1,314 @@
-# 08｜执行计划：Node-01 四条主线
+# 08｜执行计划 rev 2：准备完成后再集中上机
+
+> 2026-09-30 修订：上一版把真机基线放在第一步。Owner 已明确要求“先做好准备，上机测试是最后一步”，因此当前计划改为 **offline/source/code preparation first, physical Node-01 live gate last**。旧思路及修正原因保存在 `docs/09-preflight-readiness.md`。
 
 ## 总目标
 
 把 Redmi K20 Pro 变成一个脱离 Windows/Codex 也能长期自主运行的 Android Automation Node。
 
-最终闭环：
+最终闭环仍然不变：
 
 ```text
-Node-01 常态运行游戏
-        ↓
-高优先级任务到时
-        ↓
-Supervisor 安全抢占
-        ↓
-执行 PDD / 其他任务
-        ↓
-验证结果
-        ↓
-恢复原游戏/执行器
-        ↓
-异常可自救，状态可恢复
+游戏运行
+→ PDD 高优先级时间窗
+→ 停止/让出当前挂机
+→ 执行抢券
+→ 验证结果
+→ 恢复原挂机
 ```
 
-这不是四个互不相关项目。依赖关系是：
+当前变化只是执行顺序：
 
 ```text
-Node Foundation / Supervisor
-        │
-        ├── PDD Coupon
-        ├── MFABD2
-        └── Alas on-device
-                ↓
-        Integrated 24×7 Node
+先把源码、安装包、代码、采证工具、验收合同全部准备好
+→ 最后才连接 K20 Pro 集中验证
 ```
 
 ---
 
-# Track A｜Node-01 基础与 Supervisor
+# Phase P0｜Source Reality Freeze
 
-这是其他三条线的公共底座，优先级最高。
+目标：不上机，先把当前上游真实能力和版本边界查清。
 
-## A0｜真实设备基线
+## P0.1 AutoJs6
 
-目标：把“我们以为这台手机是什么”变成实际设备证据。
+已确认现成能力：
 
-采集：
+- persistent storage；
+- timers；
+- child script execution / single-engine force stop；
+- app launch；
+- Root shell；
+- RootAutomator；
+- screenshot；
+- template matching；
+- Accessibility；
+- device / foreground metadata。
 
-- Android / API / build；
-- 分辨率 / density / orientation；
-- root；
-- ADB；
-- 当前前台 Activity；
-- AutoJs6 是否可安装/运行；
-- Accessibility 是否可启用；
-- 截图权限；
-- shell / Root input；
-- 后台保活行为。
+结论：
 
-交付：
+> 不造自定义 runtime / storage / scheduler framework。
 
-- `device/node-01.json` 或同等最小状态文件；
-- 一份 live receipt；
-- 所有设备相关结论标明 evidence class。
+准备输出：
 
-完成条件：
+- 安装包 + SHA256；
+- Node-01 collector；
+- screenshot collector；
+- Supervisor 首期允许使用的 API 清单。
 
-> Node-01 基础环境 LIVE VERIFIED。
+## P0.2 MFABD2
 
-## A1｜最薄 Supervisor
+已确认：
 
-第一版只做：
+- 官方 Android ARM64 APK；
+- Android 9+；
+- Root / Shizuku；
+- AndroidNativeController；
+- 正式 package 与 Brown Dust 2 package；
+- 真机完整任务仍属于上游自己标注的未验收区。
+
+结论：
+
+> 不 fork、不预写统一 Adapter；先准备官方 APK 最小验收。
+
+## P0.3 Alas
+
+已确认：
+
+- 当前 requirements；
+- AidLux 0.92 专门依赖文件仍在仓库；
+- ARM64 Docker 路线；
+- Python 3.7.10 / mxnet ARM64 特殊处理。
+
+准备继续：
+
+- 依赖可安装性表；
+- Android 9 runtime 候选对比；
+- 只在 source evidence 足够时选第一候选。
+
+---
+
+# Phase P1｜Supervisor 最小设计与代码准备
+
+Owner 已明确要求的行为只有：
 
 ```text
-IDLE
-GAME
-PDD_PREPARE
-PDD_CLAIM
-RECOVERY
-ERROR
+抢券前停止挂机
+→ 抢券
+→ 抢完恢复挂机
 ```
 
-只实现当前真实需要：
+因此首版 Supervisor 只允许拥有：
 
-- 单一 screen owner；
-- 任务启动/停止；
-- 最小持久状态；
-- 日志；
-- 超时；
-- 恢复到前一个任务。
+1. PDD 时间窗判断；
+2. 当天是否已成功兑换；
+3. 抢占前运行任务身份；
+4. 请求/执行停止；
+5. PDD 任务启动；
+6. PDD 完成后恢复前一任务。
 
-暂不做：
+暂不实现：
 
 - 通用插件系统；
 - 多节点；
-- Web UI；
-- 远程控制平台；
-- 泛化 workflow DSL；
-- 复杂优先级队列。
+- 通用 Adapter interface；
+- health/recover 大接口；
+- 多层 watchdog；
+- 复杂 queue / priority scheduler；
+- 云端控制；
+- Web UI。
 
-完成条件：
+首版代码完成后只能标：
 
-> 能用一个假 GameTask + 一个假 HighPriorityTask 在手机本机完成“运行→抢占→恢复”。
-
-## A2｜Watchdog / Recovery v1
-
-只接入真实观察到的故障。
-
-第一版可接受的恢复层：
-
-- 子任务进程消失；
-- 目标 App 不在前台；
-- 任务超时；
-- Supervisor 重启后读取状态。
-
-不要提前实现“任何异常都自动重启手机”。
-
-完成条件：
-
-> 已观察到的首批故障可以恢复；未观察故障不预写幻想式 fallback。
+> CODE VERIFIED, LIVE UNVERIFIED
 
 ---
 
-# Track B｜拼多多百亿补贴抢券
+# Phase P2｜PDD Final-Live Harness 准备
 
-这是最高优先级、最需要真机实测的业务任务。
+在不上机阶段完成：
 
-## B0｜页面勘察
+- 页面证据采集步骤；
+- Accessibility tree 采集方式；
+- screenshot 采集；
+- 输入 latency benchmark 脚本设计；
+- detection benchmark 记录格式；
+- refresh → target visible → tap 的时间线日志；
+- success / already claimed / sold out receipt 模板。
 
-在真实 PDD 页面采：
-
-- UI / Accessibility tree；
-- 页面截图；
-- 刷新前后；
-- 积分兑券模块不同垂直位置；
-- 5 元券局部；
-- 兑换按钮；
-- 成功 / 已兑换 / 抢完状态。
-
-目标不是抢券，而是回答：
-
-> 哪个信号最稳定、最快？
-
-## B1｜输入延迟 Benchmark
-
-至少比较：
-
-- Accessibility click；
-- RootAutomator；
-- shell input tap。
-
-记录：
+当前检测策略只是待验证假设：
 
 ```text
-command issued
-→
-screen observable change
-```
-
-同时测：
-
-- screenshot latency；
-- template match latency；
-- OCR latency；
-- refresh 到目标出现时间。
-
-完成条件：
-
-> 关键路径靠实测选择，而不是凭直觉。
-
-## B2｜PDD Detector v1
-
-路线按证据选择：
-
-```text
-Accessibility 可用
-→ semantic locate
-
-否则
-→ screenshot ROI
-→ template / color
+Accessibility
+→ local template/color
 → relative tap
-
-OCR
-→ fallback / diagnostics
+→ OCR fallback
 ```
 
-第一版只识别：
-
-- 目标券存在；
-- 可兑换；
-- 成功 / 已兑换 / 不可兑换。
-
-不要做泛化电商页面识别框架。
-
-## B3｜抢券闭环
-
-接 Supervisor：
-
-```text
-08:59:40
-→ 抢占游戏
-→ 打开/准备 PDD
-→ 预热
-
-09:00 左右
-→ refresh
-→ detect
-→ tap
-→ verify
-→ persist claimed_today
-→ recover previous task
-```
-
-16:00 / 21:00 同理；当天成功则跳过。
-
-完成条件：
-
-> 至少一次真实刷新窗口完整跑通，并且恢复原任务。
+只有最终 live evidence 才能选择主链路。
 
 ---
 
-# Track C｜棕色尘埃2 / MFABD2
+# Phase P3｜MFABD2 接入准备
 
-这里优先复用上游，不自己重写游戏自动化。
+不上机阶段只做：
 
-## C0｜官方 APK 直接验收
+- 锁定待测正式 APK；
+- 校验 SHA256；
+- 阅读 Android 上游行为；
+- 明确最低验收动作；
+- 明确如何观察“停止后是否释放控制权”。
 
-先不写 Adapter、不 fork。
+不上机阶段**不写统一 BrownDust2Adapter**。
 
-验证：
-
-- K20 Pro 能否安装；
-- Root / Shizuku 授权；
-- 能否连接游戏；
-- 截图/识别正常；
-- 至少跑一个最小日常；
-- 后台/前台切换后状态如何；
-- MFABD2 停止后能否干净释放屏幕。
-
-完成条件：
-
-> MFABD2 Android 在 Node-01 的真实能力边界被确认。
-
-## C1｜BrownDust2 Adapter
-
-只实现 Supervisor 真正需要的接口。
-
-候选：
-
-```text
-start
-safe_stop
-resume
-health
-recover
-```
-
-先尝试外部控制：
-
-- Activity；
-- process；
-- Intent；
-- 文件/配置；
-- 上游已有接口。
-
-只有外部无法完成真实需求，才考虑 fork。
-
-## C2｜PDD 抢占 MFABD2
-
-验证：
-
-```text
-MFABD2 正在跑
-→ Supervisor 请求停止
-→ PDD 抢券
-→ MFABD2 / 游戏恢复
-```
-
-这是棕色尘埃2线真正与主项目合流的验收。
+最终上机先观察它真实可控边界，然后只补实际缺的 integration shim。
 
 ---
 
-# Track D｜碧蓝航线 / Alas 本机化
+# Phase P4｜Alas 本机化准备
 
-这是技术风险最高的一条，放在 PDD 和 MFABD2 之后。
+这是技术风险最高的一条，但源码审计可以提前完成。
 
-## D0｜2026 当前 Alas 依赖审计
+不上机阶段：
 
-检查当前上游：
+1. 列出当前 Python/native dependencies；
+2. 标记 ARM64 已有 wheel / 特殊 wheel / native library；
+3. 对 AidLux / Termux / proot / chroot / Root Linux / container 做证据比较；
+4. 选择第一候选和一个明确 fallback 候选；
+5. 写安装步骤草案；
+6. 准备 localhost ADB proof 步骤。
 
-- Python 版本；
-- native dependencies；
-- ARM64 wheel；
-- ADB / screenshot backend；
-- Web UI/daemon；
-- Windows-only 假设；
-- Linux ARM64 假设。
+不要同时实现六条 runtime 路线。
 
-输出：
+---
 
-> 当前 Alas 放进 Android 9 / ARM64 最真正的 blocker 是什么。
+# Phase P5｜Static / Code Verification Gate
 
-## D1｜选择最小本机 runtime
-
-候选只根据证据比较：
-
-- AidLux 类环境；
-- Termux；
-- proot；
-- chroot；
-- Root Linux；
-- container/docker 类环境。
-
-选择标准：
-
-1. 当前 Alas 能跑；
-2. ARM64 依赖可安装；
-3. localhost ADB 可控同机；
-4. 资源占用可接受；
-5. 能长期运行；
-6. 能被 Supervisor 启停。
-
-不要为了“技术漂亮”选最复杂方案。
-
-## D2｜最小 Alas on-device Proof
-
-只证明：
+上机前要求：
 
 ```text
-Alas process 在 K20 Pro
-→ localhost ADB
-→ 截图同一台手机
-→ 识别碧蓝航线页面
-→ 执行一个无风险动作
-```
-
-先不做 24×7。
-
-## D3｜AzurLane Adapter
-
-和 MFABD2 一样，只做 Supervisor 所需控制边界：
-
-- start；
-- safe_stop / pause；
-- resume；
-- health；
-- recover。
-
-## D4｜PDD 抢占 Alas
-
-最终验证：
-
-```text
-Alas 正在挂机
-→ 到 PDD 时间
-→ 安全暂停 Alas
-→ PDD
-→ 恢复 Alas
+[ ] 当前 upstream revision 已锁
+[ ] 安装包及 SHA256 已锁
+[ ] 准备脚本语法检查通过
+[ ] Supervisor 最小逻辑代码检查通过
+[ ] 不存在提前引入的通用 Adapter / retry / watchdog fantasy
+[ ] PDD live receipt 模板齐全
+[ ] MFABD2 live checklist 齐全
+[ ] Alas 第一候选 runtime 有 source-based 理由
+[ ] 所有未真机验证项明确标 LIVE UNVERIFIED
 ```
 
 ---
 
-# Track E｜长期无人值守
+# FINAL LIVE GATE｜最后才上 K20 Pro
 
-等 A/B/C 至少稳定后再做。
+到这里之前不碰 Node-01。
 
-## E0｜日志与未知状态
+最后集中做：
 
-统一记录：
+## L0 基线
 
-- task；
-- start/end；
-- success/failure；
-- failure reason；
-- recovery action；
-- unknown-screen screenshot。
+运行：
 
-不要先做云端日志平台。
+- `tools/node01/collect-baseline.js`
+- `tools/node01/capture-screen.js`
 
-## E1｜断电/重启恢复
+确认：
 
-目标：
-
-```text
-runtime / phone restart
-→ Supervisor 启动
-→ 读取持久状态
-→ 不重复已完成任务
-→ 恢复合理的当前任务
-```
-
-来电自动开机是否能做，单独实机研究，不假设。
-
-## E2｜24h Soak
-
-至少连续观察：
-
-- 内存；
+- Android/API；
+- AutoJs6；
+- root；
 - Accessibility；
-- AutoJs6/runtime；
-- 游戏；
-- PDD 调度；
-- MFABD2 / Alas；
-- 网络异常；
-- App 闪退。
+- screenshot；
+- foreground metadata。
 
-记录所有首次出现的真实故障，再决定要不要增加新的 recovery 机制。
+## L1 PDD
 
----
+采真实页面：
 
-# 执行顺序
+- UI tree；
+- screenshot；
+- 动态模块位置；
+- 目标券状态；
+- click/screenshot/template/OCR latency；
+- refresh latency。
 
-严格按依赖和收益排序：
+根据结果现场选择主检测路径，而不是事先硬编码。
+
+## L2 Supervisor + PDD
+
+证明：
 
 ```text
-1. A0 真实设备基线
-2. A1 最薄 Supervisor
-3. B0 PDD 页面勘察
-4. B1 延迟 benchmark
-5. B2/B3 PDD 真闭环
-6. C0 MFABD2 官方 APK 真机验收
-7. C1/C2 接 Supervisor
-8. D0 Alas 当前依赖审计
-9. D1/D2 Alas 本机 proof
-10. D3/D4 接 Supervisor
-11. A2 + E0/E1/E2 长期稳定化
+受控挂机任务
+→ PDD 抢占
+→ PDD 完成/超时
+→ 恢复挂机
 ```
 
-这个排序的理由：
+## L3 MFABD2
 
-- PDD 没有成熟上游替我们做，且有准点竞争，应该早解决；
-- MFABD2 已有 Android APK，收益高、集成成本预计最低；
-- Alas 本机化价值高，但技术风险最大，所以放后；
-- Watchdog 不提前幻想所有故障，而是在真实任务跑起来后按故障补。
+安装官方 APK，跑最小任务，观察真实暂停/退出/恢复边界。
 
----
+然后才决定是否需要 integration shim / fork。
 
-# 第一阶段不做什么
+## L4 Alas
 
-明确禁止首期膨胀：
+只跑第一候选 runtime 的最小 proof：
 
-- 不做多设备管理；
-- 不做云端后台；
-- 不做可视化 workflow 编辑器；
-- 不做完整插件平台；
-- 不做所有游戏统一抽象；
-- 不 fork 三个上游；
-- 不为未知异常预写十层恢复；
-- 不把 Codex/Windows 变成 runtime；
-- 不把 OCR 当通用锤子；
-- 不做反作弊/Root 隐藏。
+```text
+Alas 本机进程
+→ localhost ADB
+→ 同机截图/识别
+→ 一个无风险动作
+```
+
+失败时根据实际 blocker 再进入 fallback 候选，而不是预先同时铺开。
 
 ---
 
-# 项目状态表
+# 24×7 稳定化
 
-| Track | 当前状态 | 下一动作 | 目标证据 |
-|---|---|---|---|
-| A Supervisor | DESIGN READY | A0 真机基线 | LIVE VERIFIED on Node-01 |
-| B PDD | DESIGN READY, LIVE UNVERIFIED | B0 页面勘察 | UI tree + screenshots + latency |
-| C MFABD2 | UPSTREAM SUPPORTED, NODE-01 UNVERIFIED | C0 官方 APK | live minimal task |
-| D Alas | COMMUNITY-PROVEN CONCEPT, NODE-01 UNVERIFIED | D0 依赖审计 | source/runtime feasibility |
-| E 24×7 | NOT STARTED | 等 A/B/C 有真实运行 | soak evidence |
+只有 FINAL LIVE GATE 后开始。
+
+Watchdog / Recovery 按真实出现的问题增量加入：
+
+```text
+observed failure
+→ root cause
+→ smallest recovery
+→ verify
+```
+
+不先写“万能自愈系统”。
 
 ---
 
-# 下一步
+# 当前状态
 
-现在直接从 **A0 → A1** 开始。
+| Area | 当前状态 | 上机前剩余 |
+|---|---|---|
+| Coding standards | READY | 无 |
+| Upstream registry | READY | 最终 live 前刷新一次 |
+| AutoJs6 source capability | SOURCE VERIFIED | Supervisor 代码准备 |
+| Node-01 collector | CODE PREPARED | 最终上机运行 |
+| MFABD2 package | PACKAGE VERIFIED | 最终上机安装 |
+| PDD | DESIGN / HARNESS PREP | 最终真实页面采样 |
+| Alas | SOURCE AUDIT IN PROGRESS | runtime 候选收敛 |
+| Physical K20 | LIVE UNVERIFIED | **最后阶段统一验证** |
 
-第一件实际工程工作不是写 PDD OCR，也不是 fork MFABD2/Alas，而是建立 Node-01 的真实设备基线，然后写一个最薄 Supervisor 骨架。
+## 当前下一步
 
-这两步完成后，PDD、MFABD2、Alas 才有共同的接入点。
+不是上机。
+
+下一步继续：
+
+```text
+P1 Supervisor 最小代码
++
+P2 PDD benchmark/receipt 工具
++
+P4 Alas 依赖审计
+```
+
+这些完成并自检后，才进入 FINAL LIVE GATE。

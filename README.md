@@ -27,7 +27,9 @@
 8. [docs/07-coding-standards.md](docs/07-coding-standards.md)  
    从 ai-coding-cognition 引入并针对 Android 真机自动化收窄的编程约束。
 9. [docs/08-execution-plan.md](docs/08-execution-plan.md)  
-   Node-01、拼多多、MFABD2、Alas 与长期无人值守的执行计划和依赖顺序。
+   Node-01、拼多多、MFABD2、Alas 与长期无人值守的当前执行计划。
+10. [docs/09-preflight-readiness.md](docs/09-preflight-readiness.md)  
+   按 skill 自检后的修正：所有准备先完成，K20 Pro 真机测试放在最终 Live Gate。
 
 ## 当前核心判断
 
@@ -79,13 +81,14 @@ Android Automation Node
 最近的实现顺序应当是：
 
 ```text
-1. 建立最薄 Supervisor
-2. 做任务互斥 / 状态持久化 / 超时恢复
-3. 接入拼多多任务
-4. 实机测 Accessibility / 模板 / Root tap 延迟
-5. 接入 MFABD2 Android
-6. 研究 Alas 本机化
-7. 再扩展其他游戏与日常任务
+1. 完成上游源码/依赖/安装包准备
+2. 写最薄 Supervisor
+3. 准备 PDD 采证与延迟 benchmark 工具
+4. 准备 MFABD2 最小验收合同
+5. 收敛 Alas 本机 runtime 第一候选
+6. 做完代码级自检
+7. 最后一次集中上 K20 Pro 验收
+8. 根据真实故障增量加入 Watchdog/Recovery
 ```
 
 不要一开始把所有上游都 fork，也不要先做一个庞大通用框架。

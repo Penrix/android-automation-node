@@ -20,6 +20,8 @@
    《碧蓝航线》《棕色尘埃2》以及通用游戏挂机的当前认知。
 6. [docs/05-upstream-strategy.md](docs/05-upstream-strategy.md)  
    哪些东西我们自己拥有，哪些优先复用上游，什么时候才值得 fork。
+7. [docs/06-tooling-research-notes.md](docs/06-tooling-research-notes.md)  
+   GKD、AutoJs6、uiautomator2、Airtest 等已经做过的工具研究，防止以后重复调查和回退认知。
 
 ## 当前核心判断
 

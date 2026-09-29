@@ -93,7 +93,6 @@
     };
 
     var treePath = files.join(outputDir, "accessibility-tree.json");
-    files.write(treePath, JSON.stringify(evidence, null, 2));
 
     var screenshotMeta = {
         schema: 1,
@@ -133,7 +132,7 @@
         JSON.stringify(screenshotMeta, null, 2)
     );
 
-    evidence.timing.total_before_write_ms = Date.now() - scriptStartedAt;
+    evidence.timing.total_probe_ms = Date.now() - scriptStartedAt;
     files.write(treePath, JSON.stringify(evidence, null, 2));
 
     console.log("WROTE " + treePath);

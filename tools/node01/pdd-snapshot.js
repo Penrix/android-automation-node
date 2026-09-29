@@ -60,8 +60,12 @@
         return item;
     }
 
+    var scriptStartedAt = Date.now();
     var observedAt = new Date().toISOString();
+
+    var rootStartedAt = Date.now();
     var root = safeValue(function () { return auto.rootInActiveWindow; });
+    var rootAcquiredAt = Date.now();
 
     var evidence = {
         schema: 1,
@@ -75,11 +79,18 @@
         tree: null
     };
 
+    var treeStartedAt = Date.now();
     if (root) {
         evidence.tree = serializeNode(root, []);
         evidence.node_count = count;
         evidence.truncated = count >= MAX_NODES;
     }
+    var treeFinishedAt = Date.now();
+
+    evidence.timing = {
+        root_lookup_ms: rootAcquiredAt - rootStartedAt,
+        tree_serialize_ms: treeFinishedAt - treeStartedAt
+    };
 
     var treePath = files.join(outputDir, "accessibility-tree.json");
     files.write(treePath, JSON.stringify(evidence, null, 2));
@@ -121,6 +132,9 @@
         files.join(outputDir, "screen.json"),
         JSON.stringify(screenshotMeta, null, 2)
     );
+
+    evidence.timing.total_before_write_ms = Date.now() - scriptStartedAt;
+    files.write(treePath, JSON.stringify(evidence, null, 2));
 
     console.log("WROTE " + treePath);
 })();

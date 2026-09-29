@@ -30,6 +30,10 @@
    Node-01、拼多多、MFABD2、Alas 与长期无人值守的当前执行计划。
 10. [docs/09-preflight-readiness.md](docs/09-preflight-readiness.md)  
    按 skill 自检后的修正：所有准备先完成，K20 Pro 真机测试放在最终 Live Gate。
+11. [docs/10-alas-on-device-preflight.md](docs/10-alas-on-device-preflight.md)  
+   Alas 在 Android 9 / Snapdragon 855 上的本机化候选路线与证据。
+12. [docs/11-final-live-receipt-template.md](docs/11-final-live-receipt-template.md)  
+   最终一次性上机时使用的验收与证据模板。
 
 ## 当前核心判断
 

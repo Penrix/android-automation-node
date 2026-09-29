@@ -278,44 +278,28 @@ Supervisor
 
 ---
 
-## 10. 外部执行器通过 Adapter 接入
+## 10. 外部执行器边界：先观察，再决定是否需要 shim
 
-MFABD2 和 Alas 都不应该直接侵入 Supervisor 内核。
+MFABD2 和 Alas 都不应该直接侵入 Supervisor 内核，但这**不等于现在就应该设计一套统一 Adapter 接口**。
 
-采用 Adapter：
+旧文档提前列出了 `start / pause / resume / stop / health / recover`。按 Complexity Gate，这属于在真实控制面未知时先制造 abstraction。
+
+当前规则：
 
 ```text
-Supervisor
-   ↓
-BrownDust2Adapter
-   ├─ start()
-   ├─ pause()
-   ├─ resume()
-   ├─ stop()
-   ├─ health()
-   └─ recover()
-
-Supervisor
-   ↓
-AzurLaneAdapter
-   ├─ start()
-   ├─ pause()
-   ├─ resume()
-   ├─ stop()
-   ├─ health()
-   └─ recover()
+先读上游控制面
+→ 最终真机观察实际启动/停止/恢复行为
+→ 只为真实缺口写最薄 integration shim
 ```
 
-底层到底是：
+可能最终只是：
 
-- APK；
-- AutoJs6；
-- Linux 进程；
-- localhost ADB；
+- 一个 shell/Intent 调用；
+- 一个进程启停脚本；
+- 一个配置文件切换；
+- 或者根本不需要额外 Adapter。
 
-由 Adapter 自己处理。
-
-Supervisor 不应该知道大量游戏细节。
+只有真实边界证明需要独立 policy 时，才形成正式 Adapter。
 
 ---
 

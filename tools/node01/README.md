@@ -32,3 +32,36 @@
 - 不自动 force-stop 游戏；
 - 不在准备脚本中执行真实抢券；
 - 任何 destructive / externally visible action 留给最终专项验收。
+
+
+## 已准备的 Final-Live 工具
+
+```text
+collect-baseline.js
+  只读设备/AutoJs6/root/accessibility 基线
+
+capture-screen.js
+  截图能力与 capture latency
+
+pdd-snapshot.js
+  PDD Accessibility tree + screenshot + read-only timing
+
+install-pdd-schedule.js
+  最终 live handler 完成后，注册 09:00 / 16:00 / 21:00
+
+remove-pdd-schedule.js
+  移除上述持久定时任务
+
+mfabd2-stop.js
+  最终 live 阶段验证 root force-stop 是否释放 MFABD2 执行环境
+
+mfabd2-launch.js
+  最终 live 阶段验证普通 launcher 边界
+```
+
+注意：
+
+- install/stop/launch 都有外部副作用，不属于第一轮只读采证；
+- `install-pdd-schedule.js` 在 `runtime/pdd/live.js` 不存在时必须失败；
+- 当前没有 `mfabd2-resume.js`，因为恢复行为没有 live 证据；
+- 当前没有 PDD 最终点击脚本，因为真实页面证据尚未采集。

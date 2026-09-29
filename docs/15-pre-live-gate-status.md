@@ -30,12 +30,22 @@
 已实际执行：
 
 ```text
-Node.js syntax parse:
-PASS for prepared JS shape checked in this preparation pass
+JavaScript parse-only:
+PASS
+- collect-baseline.js
+- capture-screen.js
+- pdd-snapshot.js
+- install-pdd-schedule.js
+- remove-pdd-schedule.js
+- mfabd2-stop.js
+- mfabd2-launch.js
 
 POSIX sh -n:
-PASS for AidLux preflight script shape
+PASS
+- aidlux-preflight.sh
 ```
+
+这些检查只证明源码能被 parser 接受，不证明 AutoJs6 / AidLux / Android runtime 行为。
 
 当前工具环境没有 PowerShell，因此：
 
@@ -46,6 +56,31 @@ PASS for AidLux preflight script shape
 `CODE REVIEWED, NOT EXECUTED`
 
 这条不会写成“测试通过”。
+
+## Complexity Gate removal pass
+
+已执行 removal pass，并实际删除/否决了这些早期机制：
+
+```text
+常驻自研 Supervisor scheduler
+Task Lock / screen_owner
+6-state generic state machine
+5-level Recovery ladder
+universal Watchdog
+MFABD2 Adapter interface
+Alas Adapter interface
+多个 Alas runtime 并行安装路线
+```
+
+保留下来的额外机制都能回答“哪个当前事实要求它”：
+
+- PDD 三个 TimedTask：Owner 明确刷新时间；
+- schedule installer 去重：持久任务重复注册会真实导致同一时刻多次运行；
+- remove schedule：安装持久副作用需要明确回滚；
+- claimed_date：一天只能兑换一张；
+- previous_managed_task：PDD 后必须恢复原任务；
+- MFABD2 force-stop probe：PDD 抢占需要让游戏执行器让出设备；
+- AidLux preflight：Alas ARM64/native 依赖已有真实 blocker evidence。
 
 ## Complexity Gate：明确不做
 
@@ -138,6 +173,8 @@ managed game task
 当前整体项目：
 
 `CODE VERIFIED, LIVE UNVERIFIED`
+
+当前 canonical architecture 已从 Supervisor-first 修正为 event-driven preemption；`runtime/pdd/live.js` 已确认仍不存在，这是有意的 Final Live gate。
 
 更细分：
 

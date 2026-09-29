@@ -26,6 +26,8 @@
    GKD、AutoJs6、uiautomator2、Airtest 等已经做过的工具研究，防止以后重复调查和回退认知。
 8. [docs/07-coding-standards.md](docs/07-coding-standards.md)  
    从 ai-coding-cognition 引入并针对 Android 真机自动化收窄的编程约束。
+9. [docs/08-execution-plan.md](docs/08-execution-plan.md)  
+   Node-01、拼多多、MFABD2、Alas 与长期无人值守的执行计划和依赖顺序。
 
 ## 当前核心判断
 

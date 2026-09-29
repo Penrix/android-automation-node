@@ -13,7 +13,7 @@
 1. [docs/00-origin-and-cognition.md](docs/00-origin-and-cognition.md)  
    这套方案是怎样从“旧手机还能怎么玩”逐步形成的。保留认知形成过程，不只保留最后结论。
 2. [docs/01-architecture.md](docs/01-architecture.md)  
-   当前总架构：Supervisor、任务切换、Watchdog、恢复、状态持久化。
+   当前总架构：上游各管内部任务，AutoJs6 TimedTask 触发 PDD，项目只拥有跨应用抢占。
 3. [docs/02-k20pro-baseline.md](docs/02-k20pro-baseline.md)  
    Node-01 的固定设备基线和约束。
 4. [docs/03-pdd-coupon.md](docs/03-pdd-coupon.md)  
@@ -34,6 +34,14 @@
    Alas 在 Android 9 / Snapdragon 855 上的本机化候选路线与证据。
 12. [docs/11-final-live-receipt-template.md](docs/11-final-live-receipt-template.md)  
    最终一次性上机时使用的验收与证据模板。
+13. [docs/12-scheduling-and-pdd-runtime-contract.md](docs/12-scheduling-and-pdd-runtime-contract.md)  
+   AutoJs6 TimedTask 成为唯一 PDD scheduler，以及 PDD runtime 的最小状态合同。
+14. [docs/13-mfabd2-control-boundary.md](docs/13-mfabd2-control-boundary.md)  
+   MFABD2 当前 source-proven launch/force-stop 边界，明确不先造 Adapter。
+15. [docs/14-alas-aidlux-dependency-audit.md](docs/14-alas-aidlux-dependency-audit.md)  
+   AidLux 专用 requirements、ARM64 mxnet/PyAV 风险和只读 preflight。
+16. [docs/15-pre-live-gate-status.md](docs/15-pre-live-gate-status.md)  
+   上机前哪些已经准备、哪些必须留到 Final Live 的冻结状态。
 
 ## 当前核心判断
 
@@ -44,11 +52,11 @@
 ```text
 K20 Pro 长期在线
         ↓
-统一 Supervisor
+成熟上游各自管理自己的游戏任务
         ↓
-在多个任务之间安全切换
+AutoJs6 TimedTask 触发跨应用 PDD 时间窗
         ↓
-任务失败可恢复
+最薄的停止 / 抢券 / 恢复闭环
         ↓
 电脑和 Codex 只用于开发/维护
         ↓
@@ -59,40 +67,39 @@ K20 Pro 长期在线
 
 ```text
 Android Automation Node
-├─ Supervisor / Scheduler
-├─ Watchdog / Recovery
+├─ AutoJs6 TimedTask / cross-app preemption
 ├─ 拼多多抢券
-├─ 碧蓝航线
-├─ 棕色尘埃2
-└─ 后续其他签到 / 收菜 / 自动化任务
+├─ MFABD2 / 棕色尘埃2
+├─ Alas / 碧蓝航线
+└─ 后续有真实需求再接入的任务
 ```
 
 ## 项目原则
 
 - **手机是运行节点，Windows/Codex 是开发工具，不是 24×7 运行依赖。**
-- **总调度优先于孤立脚本。** 任务必须知道什么时候让出屏幕、什么时候恢复。
+- **跨应用优先级只有一个 owner，执行器内部调度仍归执行器自己。** PDD 只在三个时间窗临时抢占手机。
 - **复用成熟上游，不重复发明。** MFABD2、Alas、AutoJs6 能直接承担的能力先复用。
 - **不为“可能以后需要”提前 fork。** 只有出现真实修改需求才 fork。
 - **对抢券类低延迟任务，不默认使用整屏 OCR。** 优先 Accessibility，其次局部模板/颜色，再以 OCR 兜底。
-- **长期稳定性比演示成功更重要。** 异常检测、日志、恢复和持久状态是一等公民。
+- **长期稳定性比演示成功更重要，但只为真实出现的故障增加恢复机制。**
 - **固定设备是优势。** 分辨率、DPI、ROM、Root 环境、游戏版本能固定时，优先利用这个确定性。
 - **不做反作弊绕过、Root 隐藏或规避检测。** 游戏自动化只处理自己的重复 UI 操作和日常任务。
 
 ## 当前阶段
 
-当前仍处于“认知落仓 + 运行底座定型”阶段。
+当前已接近“离线准备冻结”，尚未进入 K20 Pro Final Live Gate。
 
 最近的实现顺序应当是：
 
 ```text
-1. 完成上游源码/依赖/安装包准备
-2. 写最薄 Supervisor
-3. 准备 PDD 采证与延迟 benchmark 工具
-4. 准备 MFABD2 最小验收合同
-5. 收敛 Alas 本机 runtime 第一候选
-6. 做完代码级自检
+1. 上游源码/依赖/安装包准备   ✅
+2. PDD scheduler / 采证工具    ✅
+3. MFABD2 控制边界准备         ✅
+4. Alas AidLux preflight       ✅
+5. Complexity Gate removal     ✅
+6. Final Live 前刷新 upstream
 7. 最后一次集中上 K20 Pro 验收
-8. 根据真实故障增量加入 Watchdog/Recovery
+8. 只按真实故障增量加入 recovery
 ```
 
 不要一开始把所有上游都 fork，也不要先做一个庞大通用框架。

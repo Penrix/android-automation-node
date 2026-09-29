@@ -20,10 +20,12 @@ AlarmManager 后端源码调用：
 
 ```text
 AutoJs6 TimedTask
-├─ 09:00 → runtime/pdd/live.js
-├─ 16:00 → runtime/pdd/live.js
-└─ 21:00 → runtime/pdd/live.js
+├─ 09:00 - measured prepare_lead → runtime/pdd/live.js
+├─ 16:00 - measured prepare_lead → runtime/pdd/live.js
+└─ 21:00 - measured prepare_lead → runtime/pdd/live.js
 ```
+
+进入脚本后先完成抢占和页面准备；到目标整点才执行 refresh → detect → redeem。
 
 由 AutoJs6 负责“什么时候启动脚本”。
 
@@ -64,9 +66,10 @@ Complexity Gate 不允许这种无证据的重复 authority。
 
 安装器只认：
 
-`runtime/pdd/live.js`
+- `runtime/pdd/live.js`
+- `runtime/pdd/schedule.json`
 
-而且如果这个文件不存在，安装器会明确失败。
+任一不存在都会明确失败。schedule.json 只有 Final Live 测出准备提前量后才能生成。
 
 这条 guard 有现实依据：
 

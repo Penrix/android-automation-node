@@ -223,3 +223,44 @@ Owner 已明确要求：
 - K20 实际可运行性：LIVE UNVERIFIED
 
 直到最后真实 K20 验收才允许升级为 LIVE VERIFIED。
+
+
+---
+
+## 2026-09-30 Preparation Update
+
+新增准备材料：
+
+- `tools/node01/pdd-snapshot.js`：只读导出 PDD 当前 Accessibility 树 + 截图；不点击、不滑动、不切 App、不兑换。
+- `docs/10-alas-on-device-preflight.md`：Alas 本机化第一候选收敛为 AidLux 0.9.2；Termux 因当前 ARM64/mxnet/环境差异证据不做首选。
+- `docs/11-final-live-receipt-template.md`：最终一次性上机的证据模板。
+- `upstreams/INSTALL-MANIFEST.md`：AutoJs6 / MFABD2 的当前安装包与 SHA256。
+
+离线检查：
+
+- `collect-baseline.js`
+- `capture-screen.js`
+- `pdd-snapshot.js`
+
+已通过 JavaScript 语法解析检查。
+
+这只能证明脚本文本可被 JavaScript parser 接受，不能证明 AutoJs6 API 在 Node-01 上的实际行为。
+
+### Complexity Gate 再确认
+
+当前**不提前写**：
+
+- PDD 最终 selector；
+- PDD 固定点击坐标；
+- PDD 最终模板阈值；
+- MFABD2 的统一 Adapter；
+- Alas 的统一 Adapter；
+- 多层 Watchdog；
+- 自动重启手机；
+- Termux/AidLux/chroot 多路线并行安装器。
+
+原因不是“以后不用”，而是这些机制需要 Final Live Gate 的真实证据才能决定。
+
+准备阶段的完成标准是：
+
+> 到最终上机时，第一轮只需要运行准备好的只读采证和最小 proof，而不是现场重新研究上游、重写工具、重新设计验收。

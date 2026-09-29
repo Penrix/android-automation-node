@@ -88,39 +88,35 @@
 
 ---
 
-# Phase P1｜Supervisor 最小设计与代码准备
+# Phase P1｜跨应用抢占合同准备
 
-Owner 已明确要求的行为只有：
+源码审计后不再实现常驻 Supervisor。
 
-```text
-抢券前停止挂机
-→ 抢券
-→ 抢完恢复挂机
-```
+AutoJs6 TimedTask 已成为 PDD 时间调度的唯一 owner；MFABD2 / Alas 保留自己的内部调度。
 
-因此首版 Supervisor 只允许拥有：
+项目首版只准备跨应用抢占所需的最小事实：
 
-1. PDD 时间窗判断；
-2. 当天是否已成功兑换；
-3. 抢占前运行任务身份；
-4. 请求/执行停止；
-5. PDD 任务启动；
-6. PDD 完成后恢复前一任务。
+1. 当天是否已成功兑换；
+2. 抢占前是谁在运行；
+3. 对当前执行器使用真实验证后的最小停止动作；
+4. PDD 完成后使用真实验证后的最小恢复入口。
 
-暂不实现：
+当前已经准备：
 
-- 通用插件系统；
-- 多节点；
-- 通用 Adapter interface；
-- health/recover 大接口；
-- 多层 watchdog；
-- 复杂 queue / priority scheduler；
-- 云端控制；
-- Web UI。
+- 09:00 / 16:00 / 21:00 TimedTask 安装/移除工具；
+- MFABD2 launch / force-stop live probes；
+- claimed_date / previous_managed_task runtime contract。
 
-首版代码完成后只能标：
+当前故意不写：
 
-> CODE VERIFIED, LIVE UNVERIFIED
+- `runtime/pdd/live.js`；
+- MFABD2 resume；
+- Alas stop/resume；
+- 通用 Adapter；
+- Task Lock；
+- 通用 Watchdog。
+
+这些必须由 Final Live evidence 决定。
 
 ---
 
@@ -190,7 +186,7 @@ Accessibility
 [ ] 当前 upstream revision 已锁
 [ ] 安装包及 SHA256 已锁
 [ ] 准备脚本语法检查通过
-[ ] Supervisor 最小逻辑代码检查通过
+[x] 自制 scheduler / Supervisor 已经 Complexity Gate 删除；跨应用抢占合同已准备
 [ ] 不存在提前引入的通用 Adapter / retry / watchdog fantasy
 [ ] PDD live receipt 模板齐全
 [ ] MFABD2 live checklist 齐全
@@ -290,25 +286,25 @@ observed failure
 |---|---|---|
 | Coding standards | READY | 无 |
 | Upstream registry | READY | 最终 live 前刷新一次 |
-| AutoJs6 source capability | SOURCE VERIFIED | Supervisor 代码准备 |
+| AutoJs6 source capability | SOURCE VERIFIED | 最终真机 timing 验收 |
 | Node-01 collector | CODE PREPARED | 最终上机运行 |
-| MFABD2 package | PACKAGE VERIFIED | 最终上机安装 |
-| PDD | DESIGN / HARNESS PREP | 最终真实页面采样 |
-| Alas | SOURCE AUDIT IN PROGRESS | runtime 候选收敛 |
+| MFABD2 package/control boundary | PACKAGE/SOURCE VERIFIED | 最终 stop/release/resume 观察 |
+| PDD | SCHEDULE/HARNESS PREPARED | 最终真实页面采样后写 live handler |
+| Alas | SOURCE/DEPENDENCY AUDIT PREPARED | 最终 AidLux preflight |
 | Physical K20 | LIVE UNVERIFIED | **最后阶段统一验证** |
 
 ## 当前下一步
 
 不是上机。
 
-下一步继续：
+当前主要 offline 准备已经完成。
+
+最后只做：
 
 ```text
-P1 Supervisor 最小代码
-+
-P2 PDD benchmark/receipt 工具
-+
-P4 Alas 依赖审计
+文档状态对齐
+→ Complexity Gate removal pass
+→ upstream 在 Final Live 前刷新一次
 ```
 
-这些完成并自检后，才进入 FINAL LIVE GATE。
+然后进入 Owner 指定的最后一步：FINAL LIVE GATE。

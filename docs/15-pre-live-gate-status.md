@@ -6,6 +6,12 @@
 
 更新时间：2026-09-30。
 
+Operational boundary:
+
+`manual power-on → Android usable`
+
+is accepted. Power-loss auto-boot / charger-mode / unattended cold-start recovery are out of scope.
+
 ## 已完成的准备
 
 | Area | Evidence | 状态 |
@@ -97,6 +103,7 @@ MFABD2 Adapter
 Alas Adapter
 universal watchdog
 multi-runtime Alas installer
+power-loss auto-boot / charger-mode / unattended cold-start recovery
 MIUI keepalive workaround
 ```
 

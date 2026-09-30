@@ -33,8 +33,6 @@ Artifacts:
 
 ```text
 evidence/node01-baseline.json
-evidence/screen.png
-evidence/screen.json
 ```
 
 Status:
@@ -100,7 +98,7 @@ result confirmed:
 
 ---
 
-## L3｜Supervisor + PDD
+## L3｜PDD cross-app preemption
 
 Preservation Envelope:
 

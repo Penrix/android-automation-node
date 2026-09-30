@@ -49,16 +49,18 @@ Freshest is not automatically best. Live evidence must keep its exact upstream r
 | Source | Reviewed state | Conclusion |
 |---|---|---|
 | wess09/AzurPilot | master `4a885426772047dfac83474209dbd6fb16bb8fc4`, dev also active | Modern Alas descendant: Python 3.14/uv/RapidOCR/NCNN, active Android adapter work. Main repo alone is not the preferred K20 package because the Android host is split out. |
-| wess09/AzurPilot-for-Android | main `6c89ee73fc5e704ff2940db9f8720c4874166fba` | **Primary K20 Azur Lane candidate.** Android 9+ (minSdk 28), ARM64, Root/Shizuku, embedded PRoot/Ubuntu + AzurPilot, 1280x720 background virtual display. |
+| wess09/AzurPilot-for-Android | main `6c89ee73fc5e704ff2940db9f8720c4874166fba`; locks AzurPilot `4ac2ae452ded4badc75b87ae68868aa8a819b689` | **Second live-probe candidate.** Android 9+/ARM64/Root are a strong Node-01 match, but the locked runtime still contains the real-device `mCurrentFocus` foreground-detection defect reported in AzurPilot #1089; Redmi K50 touch/swipe failure is also open. |
 | AzurPilot-for-Android rolling Latest | published ARM64 full APK through `1.2.11` when reviewed | First-install artifact: `AzurPilot-Android-1.2.11-arm64-v8a-full.apk`, SHA-256 `900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`. Node-01 live acceptance pending. |
-| Shinarin/ALAS-AOS | Android ARM64 APK route, releases v0.1.x reviewed | Valid Android virtual-display proof based on original ALAS + MaaFwApp. Useful fallback/reference; public full-chain verification is mainly newer Android/Shizuku. |
+| Shinarin/ALAS-AOS | head `9be72778433608d4fd6039ba37e71cc71efecf16`; release v0.1.6 | **First live-probe candidate, not LIVE VERIFIED.** Android 9+/ARM64 APK + 1280x720 virtual display; requires Shizuku, but its foreground check already falls back to `pidof`, and the project has real phone-rendering/template calibration evidence. MIUI/K20 long-run evidence is still missing. |
 | helenananaa/AzurLaneAutoScript-Headless | active 2026 research project | Research/watchlist only. Root ARM64 physical-phone graphics work exists, but full game + ALAS + long-running phone acceptance is not mature enough for primary Node-01 runtime. |
 | LittleMio/AzurLaneAutoScript-docker-arm64 | current ARM64 Docker packaging | Useful mxnet/Python ARM64 recipe, but heavier than a native Android host and not first choice on K20. |
 | W1NDes/M-AzurLaneAutoScript | gameplay-modified ALAS fork | Does not materially improve Android/ARM64 deployment; old dependency stack remains. |
 
-Known AzurPilot Android realities at review time:
+Reality-audit notes at review time:
 
 - no K20 / Android 9 full-chain user report found yet;
 - successful reports include newer Redmi/iQOO devices and a Redmi Note 10 Pro on MIUI 12.5;
 - real Android virtual-display bugs have already been reported (foreground detection / some touch & swipe cases);
 - therefore Android 9 support is source/package support, not Node-01 live proof.
+- AzurPilot #1089 being closed is not fix evidence: it was closed because Android-backend bugs belong in the Android repo; the locked `4ac2ae...` code was re-read and still uses the reported failing `mCurrentFocus` logic.
+- ALAS-AOS uses the same focus signal first but has a `pidof` fallback, so the specific #1089 failure is not structurally identical there.

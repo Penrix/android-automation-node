@@ -1,3 +1,5 @@
+> **REFERENCE ONLY — not default authority.** Current behavior is governed by `START-HERE.md`, `docs/01-architecture.md`, `docs/08-execution-plan.md`, and live evidence. This file preserves preparation/research details and may contain superseded intermediate wording.
+
 # 11｜Final Live Acceptance Receipt Template
 
 > 这份模板现在只用于准备。没有真实运行的项禁止填写 PASS。

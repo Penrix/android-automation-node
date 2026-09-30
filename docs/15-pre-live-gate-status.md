@@ -25,43 +25,22 @@ is accepted. Power-loss auto-boot / charger-mode / unattended cold-start recover
 | MFABD2 4.5.0 Android ARM64 artifact + SHA256 | release/source | PACKAGE VERIFIED |
 | MFABD2 launcher package | source | SOURCE VERIFIED |
 | MFABD2 host process-death lifecycle | pinned MaaFwApp source | SOURCE VERIFIED |
-| MFABD2 direct launch / force-stop live probes | project code | CODE PREPARED |
+| MFABD2 direct launch / force-stop boundary | upstream + AutoJs6 source | SOURCE VERIFIED |
 | Alas AidLux first candidate | Alas source + 2026 issue evidence | SOURCE/COMMUNITY GROUNDED |
 | AidLux read-only environment probe | project code | CODE PREPARED |
 | Final live receipt | project docs | READY |
-| Windows APK SHA256 verifier | project code | CODE PREPARED |
 
 ## 静态检查
 
-已实际执行：
+实际 parse-only 通过：
 
 ```text
-JavaScript parse-only:
-PASS
-- collect-baseline.js
-- capture-screen.js
-- pdd-snapshot.js
-- install-pdd-schedule.js
-- remove-pdd-schedule.js
-- mfabd2-stop.js
-- mfabd2-launch.js
-
-POSIX sh -n:
-PASS
-- aidlux-preflight.sh
+collect-baseline.js
+pdd-snapshot.js
+aidlux-preflight.sh (POSIX shell syntax)
 ```
 
-这些检查只证明源码能被 parser 接受，不证明 AutoJs6 / AidLux / Android runtime 行为。
-
-当前工具环境没有 PowerShell，因此：
-
-`tools/preflight/verify-apk-hashes.ps1`
-
-状态是：
-
-`CODE REVIEWED, NOT EXECUTED`
-
-这条不会写成“测试通过”。
+这些仍只证明文本/脚本结构，不证明 Node-01 runtime。
 
 ## Complexity Gate removal pass
 
@@ -81,11 +60,9 @@ Alas Adapter interface
 保留下来的额外机制都能回答“哪个当前事实要求它”：
 
 - PDD 三个 TimedTask：Owner 明确刷新时间；
-- schedule installer 去重：持久任务重复注册会真实导致同一时刻多次运行；
-- remove schedule：安装持久副作用需要明确回滚；
 - claimed_date：一天只能兑换一张；
-- previous_managed_task：PDD 后必须恢复原任务；
-- MFABD2 force-stop probe：PDD 抢占需要让游戏执行器让出设备；
+- PDD read-only collector：真实页面结构和 latency 只有真机能回答；
+- MFABD2 force-stop 候选：PDD 抢占需要让游戏执行器让出设备；
 - AidLux preflight：Alas ARM64/native 依赖已有真实 blocker evidence。
 
 ## Complexity Gate：明确不做
@@ -158,7 +135,7 @@ managed game task
 
 现在生成它，只会把 LLM 默认审美或猜测写进自动兑换路径。
 
-因此 schedule installer 会在 live handler 不存在时拒绝注册。
+因此在 live handler 和 prepare_lead 都被真机证据确定之前，不注册生产 TimedTask。
 
 ## 当前真正剩余的 offline 工作
 

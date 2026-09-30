@@ -27,12 +27,11 @@ Android
 ├─ MFABD2 Android APK
 │  └─ 棕色尘埃2
 │
-└─ AidLux 0.9.2
-   └─ Linux userspace
-      ├─ current Alas source
-      ├─ Python
-      ├─ adb
-      └─ 127.0.0.1:5555 → 同一台 Android
+└─ AzurPilot-for-Android
+   ├─ Root privileged bridge
+   ├─ embedded Ubuntu/PRoot + AzurPilot
+   └─ 1280×720 virtual display
+      └─ Azur Lane
 ```
 
 Windows/Codex 只在安装、调试、升级时参与。
@@ -320,166 +319,113 @@ resolution = 720P
 不要在这些结果出来前增加外部控制层。
 
 ---
-# 八、Alas：手机本机运行已经有人真实做过
+# 八、碧蓝航线：Android 专用版比原版 Alas 更适合当前目标
 
-这不是我们臆想。
+继续搜索 Alas forks / 衍生项目后，找到：
 
-## 1. 官方 Issue 的历史手机运行
+`wess09/AzurPilot-for-Android`
 
-Alas issue #921 记录了：
+这不是普通 ARM64 Docker 包装，而是完整 Android 宿主。
+
+## 1. 它解决了之前的四个大问题
+
+旧方案：
 
 ```text
-手机内安装 Alas
-→ 浏览器打开 127.0.0.1:22267
-→ 在手机上启动 Alas
+AidLux
+→ Python 3.7 / 老依赖
+→ local ADB
+→ 改主屏到 1280×720
+→ Alas 控主屏
 ```
 
-用户遇到的是 WebUI session 空闲后断开，刷新能继续，且“不影响实际运行”。
-
-也就是说手机自托管 Alas 早就真实存在。
-
-## 2. 2026 用户反馈正好撞上 Node-01 条件
-
-issue #5739 的用户明确说：
+Android 专用版：
 
 ```text
-AidLux 0.9.2
-+ Snapdragon 855
-+ 低版本 Android
-→ 运行顺利
+安装一个 ARM64 full APK
+→ Root backend
+→ App 内置 Ubuntu/PRoot + AzurPilot
+→ 1280×720 虚拟屏
+→ 游戏后台跑
+```
 
-Android 10
-→ 正常
+因此不再需要：
 
-Android 13/14
-→ AidLux 自身出问题
+- 单独安装 AidLux；
+- 手工解决 mxnet / PyAV；
+- 配 localhost ADB；
+- 改 K20 主屏逻辑分辨率；
+- 为别的 App 使用物理屏而暂停碧蓝航线。
+
+## 2. K20 基础条件吻合
+
+项目源码：
+
+```text
+minSdk = 28
+Android 9+
+ARM64
+Root / Shizuku
 ```
 
 Node-01：
 
 ```text
-Snapdragon 855
-Android 9
+Android 9 / API 28
+ARM64
+Root
 ```
 
-恰好更接近旧教程成功区间，而不是高 Android 失败区间。
+所以首选 Root backend。
 
-## 3. 社区甚至已经做过“手机 Docker 跑 Alas”
+## 3. 当前官方包
 
-`linwei5d/AzurLaneAutoScript-Docker-Arm64` 明确描述：
+滚动 Latest 中当前最新已发布 ARM64 full APK：
 
-- 在手机（类似 OnePlus 8 Pro）里跑 Docker；
-- Alas WebUI 为 `127.0.0.1:22267`；
-- 推荐手机自身提供 network ADB；
-- 常见本机 ADB 地址为 `127.0.0.1:5555`；
-- Docker 使用 `--restart=always`。
+`AzurPilot-Android-1.2.11-arm64-v8a-full.apk`
 
-这个项目最后镜像停在 2024，不能直接作为我们的 2026 生产包。
+SHA-256：
 
-它的价值是：
+`900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`
 
-> 已经有人证明“Android 手机同时跑 Alas controller，再通过 localhost ADB 控制自己”这套拓扑真实存在。
+full APK 内置 Runtime，首次安装应使用 full，不用 update APK。
 
----
+## 4. 真机成熟度不能高估
 
-# 九、Alas 在 Node-01 上的真实安装顺序
+项目 2026-09-24 才建仓，非常新。
 
-## Stage A：AidLux 本身
+已有成功报告：
 
-第一候选使用 **AidLux 官方 GitHub release v0.92 的 `aidlux_0.92.apk`**，不是第三方旧包。
+- Redmi K60 至尊版，Android 15，Root；
+- iQOO Neo 9，Android 16，Shizuku-m；
+- Redmi K Pad；
+- Redmi Note 10 Pro / MIUI 12.5，Shizuku-m。
 
-原因：
+但尚未看到 K20 / Android 9 的全链路报告。
 
-- Alas 当前源码仍保留 AidLux 0.92 专用 deploy/requirements；
-- 2026 用户反馈里 Snapdragon 855 + 低 Android 正是旧教程成功区间；
-- 当前 AidLux 2.x 官方要求 Android 13+，不适合 Node-01 Android 9。
+已有 bug 也真实存在：
 
-安装 0.92 并初始化后，先不装 Alas，先跑：
+- Android 虚拟屏应用前台判断在部分设备会误判；
+- Redmi K50 某些岛屿任务触控/滑动失败；
+- 调度停止行为曾有已知问题。
 
-`tools/alas/aidlux-preflight.sh`
+所以最终仍按：
 
-确认真实的 Python / git / adb / ABI / pip 环境。
+`SOURCE / PACKAGE SUPPORTED, K20 LIVE UNVERIFIED`
 
----
+处理。
 
-## Stage B：同机 ADB
+## 5. 原版 Alas + AidLux 变成 fallback
 
-Alas 最终必须看到 Android device。
-
-目标：
+如果 Android 专用版在 K20 遇到明确 blocker，再回退到：
 
 ```text
-AidLux / Linux:
-adb connect 127.0.0.1:5555
-adb devices
-→ Node-01
+official AidLux 0.92
++ original Alas
++ local ADB
 ```
 
-第一次 proof 可以临时启动 Android adbd TCP。
-
-不在准备阶段写入永久 boot property。
-
-只有 localhost ADB proof 成功以后，才决定日常运行时如何最简便地启动它。断电后的冷启动仍由 Owner 手动开机，不属于无人恢复范围。
-
----
-
-## Stage C：当前 Alas，而不是旧镜像
-
-成功的 AidLux preflight 后：
-
-```text
-clone current LmeSzinc/AzurLaneAutoScript
-→ 使用它当前自带的 AidLux 0.92 requirements
-→ deploy.template-AidLux.yaml
-→ 安装依赖
-```
-
-不要直接运行 2024 社区 Docker 镜像。
-
----
-
-## Stage D：依赖只按真实错误处理
-
-目前有两个真正已知高风险：
-
-### mxnet
-
-- Termux 用户真实卡过 ARM64 mxnet；
-- Alas ARM64 Docker 自己也替换过 ARM64 mxnet wheel。
-
-### PyAV
-
-- Alas Docker 为 `av==10.0.0` 专门安装 FFmpeg dev libs + Cython。
-
-所以：
-
-```text
-pip install
-→ 报 mxnet
-   → 处理 mxnet
-
-pip install
-→ 报 PyAV/native build
-   → 处理 PyAV
-```
-
-不要提前准备十套兼容分支。
-
----
-
-## Stage E：最小 Alas proof
-
-最终只证明：
-
-```text
-python gui.py
-→ 127.0.0.1:22267 可开
-→ ADB serial = 127.0.0.1:5555
-→ Alas 取得一帧
-→ 识别碧蓝航线主页
-```
-
-先不跑全日常。
+之前对 AidLux / ARM64 依赖 / 1280×720 的研究保留作为 fallback 资料，不再作为默认安装路线。
 
 ---
 

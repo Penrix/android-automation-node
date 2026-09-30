@@ -536,76 +536,50 @@ python gui.py
 
 ---
 
-# 十、来电自启：现在不能假设
+# 十、断电处理边界：Owner 手动开机
 
-这一点对 Node-01 特别重要，因为电池已拆除。
-
-小米官方说明：
-
-> 一些 Xiaomi 手机关机后插入充电器，在电量达到足够启动的阈值后会自动开机。
-
-但这个逻辑本来依赖 battery/charge state。
-
-Node-01 是电容/外部供电改机，所以：
-
-> 官方“达到电量阈值后开机”的行为不能直接外推到这台改机。
-
-最终必须做硬件 live test：
+Owner 已明确实际设备行为和产品边界：
 
 ```text
-Node-01 正常运行
-→ 断外部电
-→ 等完全掉电
-→ 恢复外部电
-→ 观察：
-   charger mode?
-   自动 boot?
-   停在关机充电?
-   需要按电源键?
+断电
+→ K20 Pro 关机
+→ 恢复供电后不会自动 boot
+→ Owner 手动按键开机
 ```
 
-这一步失败的话，任何 AutoJs6/Alas 软件自启都没意义。
+这不是项目缺陷，也不是本项目要解决的问题。
 
-如果它本身不能来电开机，再单独研究 boot/charger-mode 修改；不提前改 init/boot。
+因此明确删除这些工作：
+
+- 来电自启研究；
+- charger-mode 修改；
+- bootloader/init 改造；
+- UPS 方案；
+- “无人冷启动恢复”测试；
+- 为断电恢复增加额外 daemon/watchdog。
+
+软件验收边界从：
+
+```text
+Owner 手动开机
+→ Android 已进入正常可用状态
+```
+
+开始。
+
+如果以后 Owner 希望 Android 开机后自动拉起 AutoJs6 / AidLux / Alas，可以单独评估，但它不是当前 PDD/游戏挂机闭环的前置条件。
 
 ---
 
-# 十一、Android 启动后谁把自动化拉起来
-
-这要分两层。
-
-## Layer 1：手机能不能 boot
-
-硬件/bootloader/charger mode。
-
-## Layer 2：Android boot 完成后
-
-才是：
-
-```text
-AutoJs6 自动可用
-MFABD2 必要权限仍在
-AidLux/Alas runtime 恢复
-PDD TimedTask 仍存在
-```
-
-AutoJs6 当前已经有开机/定时相关机制，社区也普遍要求 MIUI 自启动白名单。
-
-但是具体“boot completed 后我们拉哪些 runtime”要在三个执行器 live proof 完成之后写。
-
-否则又会变成开机时同时拉一堆未知进程。
-
----
-
-# 十二、现在真正的最终上机顺序
+# 十一、现在真正的最终上机顺序
 
 不是一次把所有软件装完再看哪里炸。
 
 按照依赖逐层：
 
 ```text
-0. 硬件
-   来电能否自动 boot
+0. Owner 手动开机
+   Android 进入正常可用状态
 
 1. AutoJs6
    root / A11y / screenshot / background / TimedTask
@@ -647,15 +621,13 @@ AutoJs6 当前已经有开机/定时相关机制，社区也普遍要求 MIUI �
 7. PDD × Alas
    同样验证 preempt/restore
 
-8. 断电/重启
-   逐层恢复
-
-9. 24h soak
+8. 24h soak
+   只观察 Android 已运行期间的真实稳定性
 ```
 
 ---
 
-# 十三、目前哪些地方我已经“心里有数”
+# 十二、目前哪些地方我已经“心里有数”
 
 已经有具体落地路径：
 
@@ -669,7 +641,7 @@ AutoJs6 当前已经有开机/定时相关机制，社区也普遍要求 MIUI �
 - Alas 如何通过 localhost ADB 自控同机；
 - mxnet/PyAV 真正可能在哪卡；
 - 如何把三个项目串起来；
-- 断电恢复为什么必须先测硬件 boot。
+- 断电由 Owner 手动开机，项目不做无人冷启动恢复。
 
 还不知道、且现在不该假装知道：
 
@@ -678,10 +650,21 @@ AutoJs6 当前已经有开机/定时相关机制，社区也普遍要求 MIUI �
 - Node-01 上三种点击方式谁最快；
 - MFABD2 launch 后怎么恢复原 run；
 - AidLux 0.9.2 在这台改机上的实际 Python/native 包状态；
-- 本机 adbd TCP 的最终持久化方案；
-- 电容供电恢复后 K20 是否自动 boot。
+- 本机 adbd TCP 的最终运行方式。
 
 这些全部已经变成 Final Live 的明确问题，而不是模糊风险。
+
+---
+
+# 十三、历史纠正
+
+早期方案曾把“来电自动 boot / 断电后无人恢复”当作需要研究的节点能力。
+
+Owner 随后明确：
+
+> 这台 K20 Pro 不会来电自启动，也不需要解决；断电后 Owner 手动开机即可。
+
+因此当前架构以这个 Owner 事实为准。早期推演只作为认知形成历史，不再进入实施范围。
 
 ---
 

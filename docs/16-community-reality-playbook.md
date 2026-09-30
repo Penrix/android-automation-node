@@ -279,91 +279,47 @@ Dedicated Node-01 不应设置需要人工输入的安全锁屏，否则无人�
 
 ---
 
-# 六、MFABD2：这条最接近“装了就用”
+# 六、MFABD2：Android 版真正的运行方式
 
-上游当前公开说明：
+MFABD2 当前官方 Android 路线不是“拿手机主屏硬点”。它把资源打进 MaaFwApp APK，MaaFramework 运行在 root/Shizuku 拉起的特权进程里，截图和输入走 AndroidNativeController。
 
-```text
-Android 9+
-ARM64
-MFABD2 Android APK
-Root 或 Shizuku
-游戏语言简体中文
-```
-
-Node-01 正好是 Android 9 / ARM64 / Root。
-
-MaaFwApp 自己还要求/建议处理：
-
-- 通知；
-- 电池白名单；
-- 特权 backend；
-- 运行期间 foreground service。
-
-因此实际安装顺序应该是：
+更重要的是，MFABD2 当前固定的 MaaFwApp commit 已经支持 BACKGROUND：
 
 ```text
-安装 MFABD2 Android APK
-→ root 授权
-→ 按 App 提示补通知/电池白名单
-→ 让它识别 Brown Dust 2
-→ 只跑一个最小任务
-→ 再跑完整日常
+创建虚拟屏
+→ Brown Dust 2 移到虚拟屏
+→ 自动化在虚拟屏继续
+→ 物理屏可正常使用
 ```
 
-不是一装上就直接让它跑一整夜。
+BACKGROUND 是默认 run mode，默认 P720。MFABD2 的识别基准本身就是 1280×720，因此第一候选直接保持默认 720P。
+
+Node-01 已 Root，所以安装后的第一候选设置是：
+
+```text
+backend = Root
+run mode = Background
+resolution = 720P
+```
+
+第一次只跑最小任务，确认虚拟屏/物理屏并存后，再开完整日常。
+
+这条 Reality 推翻了早先“PDD 前必须 force-stop MFABD2”的假设。只要 K20 真机 BACKGROUND 正常，就没有理由停掉棕色尘埃2。
 
 ---
 
-# 七、MFABD2 如何给 PDD 让路
+# 七、MFABD2 仍需真机回答什么
 
-固定 MaaFwApp 源码已经说明：
+- Root backend 在 MIUI 10 / Android 9 的稳定性；
+- 720P virtual display 是否正常；
+- Brown Dust 2 是否稳定被固定在虚拟屏；
+- 物理屏同时使用是否真正互不干扰；
+- Android 截图偏暗是否影响颜色识别；
+- 完整任务、钓鱼等 agent 在真机的稳定性。
 
-> 宿主 app 进程死亡后，特权进程会退出并释放虚拟屏。
-
-所以第一候选：
-
-```text
-PDD prepare
-→ root:
-   am force-stop io.github.sunyink.mfabd2
-```
-
-然后观察：
-
-- MFABD2 是否立即退出；
-- privileged process 是否退出；
-- virtual display 是否释放；
-- Brown Dust 2 本体怎样；
-- PDD 能否正常拿到物理前台。
-
-PDD 结束后：
-
-```text
-app.launchPackage("io.github.sunyink.mfabd2")
-```
-
-只能称为“重新打开 MFABD2”。
-
-是否能自动续上原任务，当前没有证据。
-
-Final Live 观察后有三种可能：
-
-```text
-A. launch 后自动续跑
-→ 什么都不加
-
-B. launch 后需要点击一个明确 Resume/Start
-→ AutoJs6 只补这一刀
-
-C. 必须重建 MFABD2 run
-→ 再研究上游已有 schedule/run config 入口
-```
-
-不要预先做 Adapter。
+不要在这些结果出来前增加外部控制层。
 
 ---
-
 # 八、Alas：手机本机运行已经有人真实做过
 
 这不是我们臆想。
@@ -430,26 +386,19 @@ Android 9
 
 ## Stage A：AidLux 本身
 
-最终先手工安装 AidLux 0.9.2。
+第一候选使用 **AidLux 官方 GitHub release v0.92 的 `aidlux_0.92.apk`**，不是第三方旧包。
 
-启动一次，让 Linux userspace 初始化完成。
+原因：
 
-然后不装 Alas，先跑：
+- Alas 当前源码仍保留 AidLux 0.92 专用 deploy/requirements；
+- 2026 用户反馈里 Snapdragon 855 + 低 Android 正是旧教程成功区间；
+- 当前 AidLux 2.x 官方要求 Android 13+，不适合 Node-01 Android 9。
+
+安装 0.92 并初始化后，先不装 Alas，先跑：
 
 `tools/alas/aidlux-preflight.sh`
 
-我们要看到：
-
-```text
-/usr/bin/python
-/usr/bin/git
-/usr/bin/adb
-ARM64
-Python bitness
-pip
-```
-
-实际是什么。
+确认真实的 Python / git / adb / ABI / pip 环境。
 
 ---
 

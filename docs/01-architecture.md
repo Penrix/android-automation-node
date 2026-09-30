@@ -1,95 +1,99 @@
 # 01｜当前最小架构
 
-## 目标
+## 当前优先级
 
-手机手动开机进入 Android 后，长期运行游戏自动化；PDD 到三个刷新时间前临时拿到手机，抢完后恢复原游戏。
-
-## 运行职责
+先把两个游戏的手机本机运行链路弄清并最终实测：
 
 ```text
-AutoJs6
-→ PDD 定时入口
-→ PDD 页面识别 / 点击
-
-MFABD2
-→ 棕色尘埃2内部自动化
-
-AidLux + Alas
-→ 碧蓝航线内部自动化
+Brown Dust 2 → MFABD2 Android
+Azur Lane     → AidLux + Alas
 ```
 
-Windows/Codex 只负责开发、安装、调试和维护，不是运行依赖。
+PDD 暂时后置；它需要真实页面和时序，等游戏链路稳定后再上机处理。
 
-## 跨应用闭环
+## 两个游戏不是同一种运行方式
+
+### Brown Dust 2
+
+MFABD2 Android 使用 MaaFwApp + MaaFramework AndroidNativeController。
+
+当前 MFABD2 固定的 MaaFwApp commit 已经支持：
 
 ```text
-游戏执行器正常运行
-→ AutoJs6 在实测的 prepare_lead 前触发 PDD
-→ 当前游戏用其真实可用的最小方式让出手机
-→ PDD 到整点刷新 / 识别 / 兑换 / 验证
-→ 恢复刚才的游戏执行器
+BACKGROUND mode
+→ 创建虚拟屏
+→ 把 Brown Dust 2 移到虚拟屏
+→ 截图/点击都在虚拟屏完成
+→ 物理屏仍可正常使用
 ```
 
-MFABD2 和 Alas 的内部任务、调度、保活继续由它们自己负责。
+MaaFwApp 默认 RunMode 就是 BACKGROUND，默认虚拟屏分辨率是 720P。
 
-## 当前唯一持久业务状态
+Node-01 已 Root，所以第一候选直接选择 MaaFwApp 的 Root backend，不需要为了运行 MFABD2 再维护 Shizuku。
+
+这意味着：只要 K20 真机证明后台虚拟屏工作正常，MFABD2 不需要为了其他物理屏任务先退出。
+
+### Azur Lane
+
+Alas 是 Python controller，通过 ADB/uiautomator2/scrcpy 等方式操作 Android 主显示。
+
+手机本机化第一候选：
 
 ```text
-claimed_date = YYYY-MM-DD
+官方 AidLux 0.92 APK
++ Android 9 / ARM64
++ current Alas source
++ Alas 自带 AidLux 0.92 requirements
++ 本机 ADB
 ```
 
-因为一天只能兑换一张。成功后，当天后续 PDD 时间窗直接退出。
-
-“刚才运行的是哪个游戏”首版只在本次抢占调用中临时记住；没有真实故障证明需要落盘。
-
-## PDD 时间
-
-目标刷新时间：
+Alas WebUI 自己管理每个配置实例的子进程：
 
 ```text
-09:00
-16:00
-21:00
+Start
+→ 用同一 config 启动 scheduler loop
+
+Stop
+→ kill 当前 Alas 子进程
+
+再次 Start
+→ 重新读取该 config 的 Scheduler.Enable / NextRun
+→ 按优先级继续调度
 ```
 
-AutoJs6 TimedTask 的启动时间不是写死整点，而是：
+这不是无损暂停：正在执行到一半的具体任务会怎样恢复，要靠任务自己的页面复位能力和真机验证。
+
+## 上游各自拥有自己的调度
 
 ```text
-目标刷新时间 - prepare_lead
+MFABD2 → 自己的运行配置 / 定时 / 前台服务 / 后台虚拟屏
+Alas   → 自己的 Scheduler.Enable / NextRun / priority / error handling
 ```
 
-`prepare_lead` 必须由 K20 Pro 真机测出。
+本项目不重写这两套调度。
 
-## 已知 MFABD2 候选边界
+## Windows / Codex
 
-```text
-launch:
-app.launchPackage("io.github.sunyink.mfabd2")
+只负责开发、安装、排错、升级和读取证据，不是 24×7 运行依赖。
 
-stop candidate:
-shell("am force-stop io.github.sunyink.mfabd2", true)
-```
+## 电源边界
 
-恢复方式等真机观察；如果上游自然能续跑，不加任何额外层。
+断电后由 Owner 手动开机。项目从 Android 正常进入系统之后开始负责运行。
 
-## Alas 第一候选
+## Final Live 前仍然必须回答
 
-```text
-AidLux 0.9.2
-+ Android 9
-+ Snapdragon 855
-+ current Alas
-+ localhost ADB
-```
+### MFABD2
 
-先证明本机进程、ADB 和截图，不提前做更大集成。
+- Root backend 在这台 MIUI 10 / Android 9 上能否稳定拉起特权进程；
+- BACKGROUND 虚拟屏能否稳定把 Brown Dust 2 放在 720P 虚拟屏运行；
+- 物理屏在游戏后台运行期间是否真的可自由使用；
+- 完整日常、截图颜色和点击精度是否稳定。
 
-## Final Live 前故意未知
+### Alas
 
-- PDD Accessibility 实际暴露什么；
-- prepare_lead 是多少；
-- 哪种点击方式最快；
-- MFABD2 实际恢复入口；
-- AidLux 上当前 Alas 依赖实际状态。
-
-这些问题必须由 K20 Pro 真实运行回答。
+- 官方 AidLux 0.92 在这台 K20 上的实际 Linux/Python 环境；
+- 当前 Alas 的 AidLux requirements 能否直接安装；
+- mxnet / PyAV 具体会不会成为 blocker；
+- Android 本机 ADB 的实际 serial/连接方式；
+- 1280×720 要如何在这台真机上满足；
+- Start → Stop → Start 后具体游戏任务如何恢复。

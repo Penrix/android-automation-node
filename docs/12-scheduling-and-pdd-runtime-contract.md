@@ -1,183 +1,82 @@
-# 12｜PDD 调度与运行时合同
+# 12｜PDD 调度最小合同
 
-## 1. 调度 owner 已收敛
+本页只保留 Final Live 前已经被 Reality 支撑的事实。
 
-首版不自己写常驻轮询 scheduler。
+## 调度 owner
 
-AutoJs6 6.7.0 已经提供：
-
-- `tasks.addDailyTask`
-- `tasks.queryTimedTasks`
-- `tasks.removeTimedTask`
-- TimedTask 持久化
-- AlarmManager / WorkManager / JobScheduler 后端
-
-AlarmManager 后端源码调用：
-
-`setExactAndAllowWhileIdle(RTC_WAKEUP, triggerAtMillis, ...)`
-
-因此首版调度结构是：
+PDD 的三个刷新目标：
 
 ```text
-AutoJs6 TimedTask
-├─ 09:00 - measured prepare_lead → runtime/pdd/live.js
-├─ 16:00 - measured prepare_lead → runtime/pdd/live.js
-└─ 21:00 - measured prepare_lead → runtime/pdd/live.js
+09:00
+16:00
+21:00
 ```
 
-进入脚本后先完成抢占和页面准备；到目标整点才执行 refresh → detect → redeem。
+AutoJs6 自带持久 TimedTask，因此不写项目自己的轮询 scheduler。
 
-由 AutoJs6 负责“什么时候启动脚本”。
-
-项目自己的 PDD runtime 只负责“启动后做什么”。
-
----
-
-## 2. 为什么不再造 Supervisor 时钟
-
-如果我们再写：
+TimedTask 的实际启动时间必须是：
 
 ```text
-setInterval
-→ 每秒/每分钟看时间
-→ 自己判断 09/16/21 点
+目标刷新时刻 - prepare_lead
 ```
 
-就会产生两个调度 owner：
+`prepare_lead` 只能由 K20 Pro 真机测出：
 
 ```text
-AutoJs6 scheduler
-+
-项目自己的 scheduler
+当前游戏让出
+→ 拉起 PDD
+→ 到目标页
+→ detector ready
 ```
 
-Complexity Gate 不允许这种无证据的重复 authority。
+需要多久。
 
-所以首版没有自制时钟线程。
+在这个数字出来之前，不创建 schedule config、不注册生产定时任务。
 
----
-
-## 3. 三个时间点如何安装
-
-准备工具：
-
-- `tools/node01/install-pdd-schedule.js`
-- `tools/node01/remove-pdd-schedule.js`
-
-安装器只认：
-
-- `runtime/pdd/live.js`
-- `runtime/pdd/schedule.json`
-
-任一不存在都会明确失败。schedule.json 只有 Final Live 测出准备提前量后才能生成。
-
-这条 guard 有现实依据：
-
-> 不能把尚未根据真实 PDD 页面证据完成的脚本注册成每天自动执行的外部副作用。
-
-安装器重跑时会先移除**同一目标路径**的旧 TimedTask，再注册三条。
-
-这里的去重不是“未来安全幻想”，而是防止安装器被重复执行后在同一分钟触发多次兑换，是持久定时任务的直接副作用。
-
----
-
-## 4. PDD runtime 必须遵守的最小状态
-
-页面证据出来后编写的 `runtime/pdd/live.js` 至少需要一个事实状态：
+## 唯一持久业务状态
 
 ```text
-claimed_date = YYYY-MM-DD
+claimed_date
 ```
 
-原因是 Owner 已明确：
+原因只有一个：Owner 明确一天只能兑换一张。
 
-> 一天只能兑换 1 张。
-
-因此：
+成功后：
 
 ```text
-09:00 成功
-→ claimed_date = 今天
-→ 16:00 / 21:00 启动后立即退出
+claimed_date = today
 ```
 
-不需要先发明：
+当天后续入口直接退出。
 
-- 通用 job database；
-- task queue；
-- distributed lock；
-- retry ledger；
-- 多级状态机。
+## 当前游戏身份不持久化
 
----
+PDD 确实需要在完成后恢复刚才的游戏，但首版只在**本次抢占调用内**记住当前执行器。
 
-## 5. 抢占状态
+没有现实证据要求为了脚本崩溃后自动恢复上一任务而增加磁盘状态。
 
-Owner 还要求：
+如果以后真的观察到这个故障，再加。
 
-```text
-游戏挂机
-→ PDD 抢占
-→ 抢完恢复游戏挂机
-```
+## 注册方式
 
-真实执行器边界目前仍未知，所以现在只固定“需要记住什么”，不固定“怎么停/怎么恢复”。
+Final Live 得到：
 
-最小事实：
+1. 真正的 `runtime/pdd/live.js`；
+2. 实测 `prepare_lead`；
 
-```text
-previous_managed_task
-```
+之后，直接使用 AutoJs6 `tasks.addDailyTask` 注册三条任务即可。
 
-最后上机看到 MFABD2 / Alas 的真实控制方式后，再决定它是：
+不保留专门 installer/remove wrapper。
 
-- 一个 AutoJs6 engine；
-- 一个 Android app/process；
-- 一个 AidLux/Linux process；
-- 或其他真实对象。
-
-在此之前不建立统一 Adapter。
-
----
-
-## 6. 调度精度的 Reality Gate
-
-源码证明 AlarmManager 后端意图使用 exact alarm。
-
-但下面这条仍必须最终真机验证：
-
-```text
-K20 Pro + MIUI 10 + AutoJs6 6.7.0
-09:00 / 16:00 / 21:00
-实际唤起脚本的时间误差
-```
-
-最终 Live Gate 必须记录：
-
-```text
-scheduled_at
-engine_started_at
-delta_ms
-```
-
-如果实测误差已经满足抢券需求，不再增加任何额外时钟机制。
-
-只有实测不满足，才调查 MIUI 后台限制或其他调度方案。
-
----
-
-## 7. 当前证据等级
+## Evidence
 
 ```text
 AutoJs6 TimedTask API:
 SOURCE VERIFIED
 
-AlarmManager exact scheduling implementation:
-SOURCE VERIFIED
-
-PDD three-times-per-day schedule design:
-CODE/DESIGN PREPARED
-
-K20 actual timing precision:
+prepare_lead:
 LIVE UNVERIFIED
+
+PDD live handler:
+NOT CREATED BY DESIGN
 ```

@@ -65,7 +65,7 @@ Issue、旧聊天、计划、README、handoff 都可能过期。用户明确的�
 
 ## Android environment routing
 
-Emulator 可证明通用 Android 行为；以下应尽量真机验收：MIUI、root、AutoJs6、Accessibility tree、输入 latency、PDD 时序、实际 OCR/模板、MFABD2 权限/截图、多 App watchdog、游戏→PDD→游戏恢复、真实网络/供电。
+Emulator 可证明通用 Android 行为；以下应尽量真机验收：MIUI、root、AutoJs6、Accessibility tree、输入 latency、PDD 时序、实际 OCR/模板、MFABD2 权限/截图、游戏→PDD→游戏恢复、真实网络和长期运行状态。物理断电后来电自启不在当前项目范围。
 
 ## Review
 

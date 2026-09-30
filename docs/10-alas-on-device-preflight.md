@@ -1,3 +1,5 @@
+> **REFERENCE ONLY — not default authority.** Current behavior is governed by `START-HERE.md`, `docs/01-architecture.md`, `docs/08-execution-plan.md`, and live evidence. This file preserves preparation/research details and may contain superseded intermediate wording.
+
 # 10｜Alas 本机化准备：Android 9 / Snapdragon 855 路线收敛
 
 ## 当前结论

@@ -61,7 +61,7 @@ shell("am force-stop io.github.sunyink.mfabd2", true)
 
 如果 launch 后能自然续跑，就不加任何额外层。
 
-只有真机证明这两条不够，才补最小缺口；不先造 BrownDust2Adapter。
+只有真机证明这两条不够，才补最小缺口。
 
 ---
 
@@ -103,7 +103,6 @@ AidLux starts
 
 - 不 fork Alas；
 - 不做通用安装器；
-- 不做 AzurLaneAdapter；
 - 不同时维护 Termux/proot/chroot/Docker 多路线。
 
 只有第一候选出现明确 blocker，才进入第二候选。
@@ -111,8 +110,6 @@ AidLux starts
 ---
 
 # PDD 如何与游戏共存
-
-当前不是常驻 Supervisor。
 
 真实闭环只有：
 

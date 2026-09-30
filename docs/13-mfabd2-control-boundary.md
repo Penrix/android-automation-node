@@ -1,3 +1,5 @@
+> **REFERENCE ONLY — not default authority.** Current behavior is governed by `START-HERE.md`, `docs/01-architecture.md`, `docs/08-execution-plan.md`, and live evidence. This file preserves preparation/research details and may contain superseded intermediate wording.
+
 # 13｜MFABD2 Android 控制边界：先直接调用，不造 Adapter
 
 ## 结论

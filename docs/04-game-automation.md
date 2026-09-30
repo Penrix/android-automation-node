@@ -98,104 +98,130 @@ NODE-01 LIVE UNVERIFIED
 
 ---
 
-# 2. Azur Lane / AzurPilot-for-Android
+# 2. Azur Lane：两个 Android APK 候选
 
-第一候选不再是原版 Alas + AidLux。
-
-上游：
-
-- `wess09/AzurPilot`：现代化 Alas 变体；
-- `wess09/AzurPilot-for-Android`：Android 专用宿主，基于 ALAS-AOS / MaaFwApp 路线。
-
-## 2.1 为什么更适合 Node-01
-
-AzurPilot-for-Android 当前源码明确：
-
-- minSdk 28 = Android 9；
-- ARM64；
-- Root / Shizuku 双后端；
-- 内置 Ubuntu/PRoot runtime；
-- 内置 AzurPilot；
-- BACKGROUND 虚拟屏；
-- 虚拟屏固定横屏 1280×720；
-- 本机特权桥负责 screencap / click / swipe / shell；
-- `azurpilot_android` 控制后端不依赖 ADB / uiautomator2。
-
-因此目标结构是：
+Reality Reconnaissance 结论不是“某个 fork 已经稳赢”，而是：
 
 ```text
-K20 Android 9 / Root
-└─ AzurPilot-for-Android
-   ├─ Root privileged bridge
-   ├─ PRoot Ubuntu + AzurPilot
-   └─ 1280×720 virtual display
-      └─ Azur Lane
+Candidate A：Shinarin/ALAS-AOS
+Candidate B：wess09/AzurPilot-for-Android
+Fallback：original Alas + official AidLux 0.92
 ```
 
-物理主屏不需要改分辨率，也不需要单独安装 AidLux。
+两条 Android 路线都明确支持 Android 9 / ARM64，也都把游戏放到 1280×720 后台虚拟屏，因此都比“主屏 + local ADB”更贴当前产品目标。
 
-## 2.2 当前官方包
+## 2.1 Candidate A：ALAS-AOS
 
-截至 2026-09-30，滚动 Latest 已发布 ARM64 full APK：
+当前审查基线：
 
-`AzurPilot-Android-1.2.11-arm64-v8a-full.apk`
+- repo head：`9be72778433608d4fd6039ba37e71cc71efecf16`；
+- latest release：v0.1.6；
+- APK：`ALAS-AOS-v0.1.6-android-arm64.apk`；
+- APK SHA-256：`18510735fca2176f849e8544a9634fd5e7a59c1bc3c39b65e64063e0c64bdeeb`；
+- minSdk 28 = Android 9；
+- Shizuku privileged process；
+- Ubuntu 24.04 + Python 3.12 + original ALAS；
+- 1280×720 virtual display。
 
-SHA-256：
+对 Node-01 的不利点：它仍要求 Shizuku。Node-01 虽然已经 Root，但 Root 只是让 Shizuku 更容易启动，不等于可以删掉这个组件。
 
-`900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`
+对 Node-01 的有利点来自真实手机问题处理，而不是功能表：
 
-full APK 约 889 MB，内置 Runtime；update APK 只更新 Android 宿主，不适合作为首次安装包。
+1. 手机虚拟屏上 `mCurrentFocus` 可能消失。ALAS-AOS 的 `app_current_alasaos()` 在取不到 focus 时会 fallback 到 `pidof <package>`，不会仅因 focus 变 null 就把游戏判死。
+2. 项目已经实际遇到“桌面模拟器模板在手机 GPU 上相似度从阈值以上掉到 0.829 / 0.783”这类渲染差异，并用真机帧重新校准模板。
+3. 项目实际踩过虚拟屏劫持主屏手势导航的问题，并把 `SHOULD_SHOW_SYSTEM_DECORATIONS` 设为禁止项。
 
-## 2.3 Root 模式
+这些都说明它确实在解决“ALAS 搬到真机”后的 Reality，而不是只把 Python 打进 APK。
 
-项目自身使用 libsu，同时也支持 Shizuku。
+但成熟度仍不能高估：公开 ROM matrix 的完整开发基线主要是 Android 16 / HONOR；MIUI / HyperOS 仍是待验证，长期 soak 也未完成。
 
-Node-01 已 Root，因此第一候选直接使用 Root backend，不再额外维护 Shizuku。
+状态：
 
-已有 Redmi K60 root 用户成功报告，但 K20 / Android 9 尚无完整用户报告。
+```text
+CODE / PACKAGE VERIFIED
+K20 / MIUI 10 LIVE UNVERIFIED
+```
 
-## 2.4 Android 9 证据
+## 2.2 Candidate B：AzurPilot-for-Android
 
-不是只看 README：
+当前审查基线：
 
-- Gradle minSdk 明确为 28；
-- README 标注 Android 9.0+；
-- 源码里已有针对 Android 9 forced-size 行为的实测注释；
-- 但当前公开机型矩阵主要是更新 Android 版本。
+- Android host main：`6c89ee73fc5e704ff2940db9f8720c4874166fba`；
+- locked AzurPilot upstream：`4ac2ae452ded4badc75b87ae68868aa8a819b689`；
+- rolling Latest ARM64 full APK：`AzurPilot-Android-1.2.11-arm64-v8a-full.apk`；
+- APK SHA-256：`900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`；
+- minSdk 28；
+- Root / Shizuku 双后端；
+- Ubuntu/PRoot + modern AzurPilot；
+- 1280×720 background virtual display；
+- README 最低 4 GB RAM，推荐 6 GB+；Node-01 正好 6 GB。
 
-因此：
+它最大的结构优势是 Node-01 可以直接走 Root backend，不需要额外维护 Shizuku。
 
-`ANDROID 9 SOURCE-SUPPORTED ≠ K20 LIVE VERIFIED`
+但当前有一个已经被现场证据击中的 MISMATCH：
 
-## 2.5 已知真机问题
+- AzurPilot issue #1089 在真机虚拟屏上证明：`mCurrentFocus` 启动几秒后可变 null，而游戏进程仍活着；旧实现会误判“应用未运行”并进入 Restart 循环。
+- 该 issue 显示 closed 只是因为维护者回复“这里不接受 azurpilot_android 的 bug 反馈”，不是因为修复。
+- AzurPilot-for-Android 当前锁定的 `4ac2ae...` 里，这段 `mCurrentFocus` 判定代码仍原样存在，没有 `pidof` fallback。
 
-项目非常新，已经有真实 bug 报告：
+另有 Redmi K50 / Android 14 / Shizuku-m 用户报告 `touch down failed` 和滑动定位失败。
 
-- 某些虚拟屏上 `mCurrentFocus` 很快变 null，导致 Android backend 误判游戏未运行并 Restart 循环；
-- Redmi K50 / Android 14 用户报告岛屿“啾咖啡”任务存在 touch down / 滑动定位问题；
-- issue 曾记录调度停止行为不理想。
+所以它不是“不可能”，而是：
 
-这些是 Final Live 要重点观察的 Reality，不提前写 workaround。
+```text
+ARCHITECTURE / PACKAGE MATCH
+KNOWN RUNTIME COMPATIBILITY MISMATCH EXISTS
+K20 LIVE UNVERIFIED
+```
 
-## 2.6 原版 Alas 的位置
+不要提前 fork 修。Complexity Gate 要求先在 Node-01 复现，再决定是否补这条已经有明确根因的缺口。
 
-原版 Alas + 官方 AidLux 0.92 现在降为 fallback。
+## 2.3 为什么 first live probe 先 ALAS-AOS
 
-它仍有价值，因为：
+不是因为 ALAS-AOS 已经被证明“更稳定”。
 
-- SD855 + 低 Android 有历史成功案例；
-- 原版 Alas 逻辑更成熟；
-- 当 Android 专用宿主出现明确兼容 blocker 时，可以回退。
+只是目前两者的证据不对称：
 
-但它需要额外处理 Linux runtime、本机 ADB、1280×720 主显示和老 Python ARM64 依赖，因此不再是首选。
+```text
+ALAS-AOS
+→ 多一个 Shizuku 组件
+→ 但已处理 focus 消失 fallback
+→ 已有手机渲染差异校准
 
-## 2.7 其他 fork 的结论
+AzurPilot-for-Android
+→ Root 更直接、runtime 更现代
+→ 但当前锁定 runtime 仍带一个真机已复现的 Restart 误判
+→ 另有当前 touch/swipe 现场问题
+```
 
-- `LittleMio/AzurLaneAutoScript-docker-arm64`：ARM64 依赖配方有价值，但 Docker 太重，不适合先上 K20。
-- `miyouzi/azurlaneautoscript-arm64`：偏 ARM Linux/NAS，不是 Android 手机方案。
-- `M-AzurLaneAutoScript`：玩法增强，不解决手机 ARM64 部署。
-- `AzurLaneAutoScript-Headless`：方向先进，但 root ARM64 真机仍属研究级，完整长期 ALAS 尚未验证。
-- `Shinarin/ALAS-AOS`：也是 Android APK + 1280×720 虚拟屏，路线成立；当前主要公开全链路验证在新 Android / Shizuku 方案，Node-01 有 Root 时 AzurPilot-for-Android 更直接。
+因此最小成本的真机顺序是：
+
+```text
+ALAS-AOS minimal proof
+↓ 如果明确 blocker
+AzurPilot-for-Android minimal proof
+↓ 如果两个 Android host 都明确失败
+original Alas + AidLux 0.92
+```
+
+## 2.4 Fallback：original Alas + AidLux 0.92
+
+保留依据很具体：
+
+- 2026 上游 issue 用户明确报告 AidLux 0.9.2 + Snapdragon 855 + 低版本 Android 运行顺利；
+- Android 10 正常；
+- Node-01 是同一代 Snapdragon 855 + Android 9。
+
+但 current Alas 的 AidLux requirements 仍是老 Python 时代依赖：mxnet 1.6、PyAV 10、scipy 1.7.1 等。还需要 local ADB 和 1280×720 主显示处理。
+
+因此只作为 Android APK host 失败后的 fallback。
+
+## 2.5 当前不进入上机序列的项目
+
+- `AzurLaneAutoScript-Headless`：它自己的 runtime matrix 明确写 root ARM64 真机尚未验证当前游戏、完整 observer、ALAS、温控和 long soak；研究项目，不是当前生产候选。
+- `LittleMio/AzurLaneAutoScript-docker-arm64`：证明 generic ARM64 Linux 可以部署 Alas，但给 K20 再加 Docker/容器层没有当前收益。
+- standalone `wess09/AzurPilot`：Android host 已经拆到专用仓，没必要再手工铺 Termux/proot。
+- `M-AzurLaneAutoScript`：玩法修改，不解决 Android runtime。
 
 ---
 
@@ -208,9 +234,9 @@ MFABD2
 → 后台虚拟屏
 → 物理屏可继续使用
 
-AzurPilot-for-Android
-→ Android native host
-→ embedded PRoot/AzurPilot
+ALAS-AOS / AzurPilot-for-Android
+→ Android host
+→ embedded PRoot + ALAS/AzurPilot
 → 1280×720 background virtual display
 → physical screen remains free
 ```

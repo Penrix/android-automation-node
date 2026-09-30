@@ -64,7 +64,7 @@
 
 - 安装包 + SHA256；
 - Node-01 collector；
-- screenshot collector；
+- PDD screenshot/A11y collector；
 - Supervisor 首期允许使用的 API 清单。
 
 ## P0.2 MFABD2
@@ -114,9 +114,9 @@ AutoJs6 TimedTask 已成为 PDD 时间调度的唯一 owner；MFABD2 / Alas 保�
 
 当前已经准备：
 
-- 09:00 / 16:00 / 21:00 TimedTask 安装/移除工具；
-- MFABD2 launch / force-stop live probes；
-- claimed_date / previous_managed_task runtime contract。
+- AutoJs6 TimedTask 的 source-proven 调度方式；
+- MFABD2 launch / force-stop 的 source-proven 直接调用；
+- claimed_date 这个唯一需要持久化的业务状态。
 
 当前故意不写：
 
@@ -196,7 +196,7 @@ Accessibility
 ```text
 [ ] 当前 upstream revision 已锁
 [ ] 安装包及 SHA256 已锁
-[ ] 准备脚本语法检查通过
+[x] 保留的准备脚本语法检查通过
 [x] 自制 scheduler / Supervisor 已经 Complexity Gate 删除；跨应用抢占合同已准备
 [ ] 不存在提前引入的通用 Adapter / retry / watchdog fantasy
 [ ] PDD live receipt 模板齐全
@@ -218,7 +218,6 @@ Accessibility
 运行：
 
 - `tools/node01/collect-baseline.js`
-- `tools/node01/capture-screen.js`
 
 确认：
 

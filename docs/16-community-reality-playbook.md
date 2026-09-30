@@ -27,11 +27,10 @@ Android
 ├─ MFABD2 Android APK
 │  └─ 棕色尘埃2
 │
-└─ AzurPilot-for-Android
-   ├─ Root privileged bridge
-   ├─ embedded Ubuntu/PRoot + AzurPilot
-   └─ 1280×720 virtual display
-      └─ Azur Lane
+└─ Azur Lane Android host（Final Live 二选一）
+   ├─ first probe: ALAS-AOS + Shizuku
+   └─ second probe: AzurPilot-for-Android + Root
+      └─ both use 1280×720 virtual display
 ```
 
 Windows/Codex 只在安装、调试、升级时参与。
@@ -319,113 +318,173 @@ resolution = 720P
 不要在这些结果出来前增加外部控制层。
 
 ---
-# 八、碧蓝航线：Android 专用版比原版 Alas 更适合当前目标
+# 八、碧蓝航线：真正可行的是两个 Android APK，不是泛 ARM64 fork
 
-继续搜索 Alas forks / 衍生项目后，找到：
-
-`wess09/AzurPilot-for-Android`
-
-这不是普通 ARM64 Docker 包装，而是完整 Android 宿主。
-
-## 1. 它解决了之前的四个大问题
-
-旧方案：
+按 Reality Reconnaissance 重新检查源码、Release、Issue、真机报告和 Node-01 环境后，当前结论是：
 
 ```text
-AidLux
-→ Python 3.7 / 老依赖
-→ local ADB
-→ 改主屏到 1280×720
-→ Alas 控主屏
+first live probe
+→ Shinarin/ALAS-AOS
+
+second live probe
+→ wess09/AzurPilot-for-Android
+
+fallback
+→ original Alas + official AidLux 0.92
 ```
 
-Android 专用版：
+## 1. ALAS-AOS 为什么先试
+
+它不是“更漂亮”，而是当前对手机 Reality 的处理更完整。
+
+当前证据：
+
+- Android 9+ / minSdk 28；
+- ARM64 APK 已发布；
+- Ubuntu 24.04 + Python 3.12 + original ALAS；
+- 1280×720 后台虚拟屏；
+- 本机截图/触控桥；
+- 虚拟屏 `mCurrentFocus` 不可用时，会 fallback 到 `pidof <package>` 判断游戏进程；
+- 已经在真机上发现桌面 ALAS 模板受手机 GPU 渲染差异影响，并重录手机模板；
+- 已实际调查过虚拟屏抢主屏 SystemUI 手势的问题并在 flag 层规避。
+
+代价：
+
+- 仍依赖 Shizuku；
+- Node-01 虽已 Root，但仍要维护 Shizuku 这个额外组件；
+- 当前完整开发基线主要是较新 HONOR / Android 16；
+- MIUI / Android 9 / K20 长稳没有现成证据。
+
+所以状态是：
+
+`CODE / PACKAGE VERIFIED, K20 LIVE UNVERIFIED`
+
+## 2. AzurPilot-for-Android 为什么第二
+
+它对 Node-01 的硬件匹配其实更漂亮：
+
+- Android 9+；
+- ARM64；
+- Root / Shizuku 双后端；
+- Node-01 可以直接 Root；
+- modern AzurPilot / Python 3.14 runtime；
+- 1280×720 后台虚拟屏；
+- 推荐 6 GB+ RAM，Node-01 正好 6 GB。
+
+但当前锁定 Runtime 有一个不能忽略的 Reality MISMATCH。
+
+AzurPilot 真机 issue #1089 已经证明：
 
 ```text
-安装一个 ARM64 full APK
+游戏在虚拟屏仍正常运行
+→ mCurrentFocus 几秒后变 null
+→ runtime 把游戏误判成未运行
+→ Restart 重试 / 循环
+```
+
+该 issue 后来 closed，不是因为修了，而是维护者说 Android backend bug 不在 AzurPilot 主仓收。
+
+AzurPilot-for-Android 当前锁定的 AzurPilot commit：
+
+`4ac2ae452ded4badc75b87ae68868aa8a819b689`
+
+重新读取后，这段 `mCurrentFocus` 逻辑仍然存在，没有 `pidof` fallback。
+
+同时还有 Redmi K50 用户报告过：
+
+`touch down failed` / 滑动不到目标岗位。
+
+因此它是：
+
+`ARCHITECTURE / PACKAGE MATCH, KNOWN RUNTIME MISMATCH, K20 LIVE UNVERIFIED`
+
+不是淘汰，只是不应该在没有 K20 证据前被写成“比 ALAS-AOS 更稳”。
+
+## 3. original Alas + AidLux 为什么还要留
+
+它不再是默认路线，但它有一个非常贴 Node-01 的历史现场证据：
+
+```text
+AidLux 0.9.2
++ Snapdragon 855
++ 低 Android
+→ 用户报告运行顺利
+
+Android 10
+→ 用户报告正常
+```
+
+Node-01 就是 Snapdragon 855 + Android 9。
+
+它的问题是部署成本：
+
+- Python 3.7.6-era stack；
+- mxnet 1.6；
+- PyAV 10；
+- local ADB；
+- 主显示 1280×720 处理；
+- 没有 Android 专用后台宿主这么省事。
+
+所以只有两个 Android APK 都在 K20 出现明确 blocker 时再启用。
+
+## 4. 为什么 Headless / Docker 不进入上机序列
+
+Headless 自己的 support matrix 已经写明：
+
+```text
+rooted ARM64 physical Android
+→ systemless ANGLE / NULL contract 有真实探索
+→ 当前游戏：未验证
+→ complete observer：未验证
+→ ALAS：未验证
+→ thermal / long soak：未验证
+```
+
+它是研究项目，不是当前节点运行时。
+
+ARM64 Docker 项目证明的是“Alas 能在 ARM Linux 环境部署”，对 K20 来说只是依赖处理参考。我们已经有 Android APK host，再加 Docker 只会增加层级。
+
+---
+
+# 九、碧蓝航线 Final Live 只做最小证据链
+
+先试 ALAS-AOS：
+
+```text
+安装 APK
+→ Root 启动 Shizuku
+→ 授权
+→ Runtime 初始化
+→ 建 1280×720 VD
+→ 启动游戏
+→ 确认主屏不受影响
+→ 一个最小安全任务
+→ Restart
+→ click/swipe
+→ 2~3h soak
+```
+
+如果有明确 blocker，保存日志和失败状态，再换 AzurPilot-for-Android：
+
+```text
+安装 full APK
 → Root backend
-→ App 内置 Ubuntu/PRoot + AzurPilot
-→ 1280×720 虚拟屏
-→ 游戏后台跑
+→ Runtime 初始化
+→ VD
+→ 游戏
+→ 首先观察 app-current / Restart
+→ 再观察 touch/swipe
+→ 一个最小安全任务
+→ 2~3h soak
 ```
 
-因此不再需要：
+不要现在给任何一个 fork 写兼容补丁。
 
-- 单独安装 AidLux；
-- 手工解决 mxnet / PyAV；
-- 配 localhost ADB；
-- 改 K20 主屏逻辑分辨率；
-- 为别的 App 使用物理屏而暂停碧蓝航线。
+Complexity Gate 的要求是：
 
-## 2. K20 基础条件吻合
+> Node-01 没有复现的错误，不为它提前造 fallback / wrapper / retry。
 
-项目源码：
-
-```text
-minSdk = 28
-Android 9+
-ARM64
-Root / Shizuku
-```
-
-Node-01：
-
-```text
-Android 9 / API 28
-ARM64
-Root
-```
-
-所以首选 Root backend。
-
-## 3. 当前官方包
-
-滚动 Latest 中当前最新已发布 ARM64 full APK：
-
-`AzurPilot-Android-1.2.11-arm64-v8a-full.apk`
-
-SHA-256：
-
-`900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`
-
-full APK 内置 Runtime，首次安装应使用 full，不用 update APK。
-
-## 4. 真机成熟度不能高估
-
-项目 2026-09-24 才建仓，非常新。
-
-已有成功报告：
-
-- Redmi K60 至尊版，Android 15，Root；
-- iQOO Neo 9，Android 16，Shizuku-m；
-- Redmi K Pad；
-- Redmi Note 10 Pro / MIUI 12.5，Shizuku-m。
-
-但尚未看到 K20 / Android 9 的全链路报告。
-
-已有 bug 也真实存在：
-
-- Android 虚拟屏应用前台判断在部分设备会误判；
-- Redmi K50 某些岛屿任务触控/滑动失败；
-- 调度停止行为曾有已知问题。
-
-所以最终仍按：
-
-`SOURCE / PACKAGE SUPPORTED, K20 LIVE UNVERIFIED`
-
-处理。
-
-## 5. 原版 Alas + AidLux 变成 fallback
-
-如果 Android 专用版在 K20 遇到明确 blocker，再回退到：
-
-```text
-official AidLux 0.92
-+ original Alas
-+ local ADB
-```
-
-之前对 AidLux / ARM64 依赖 / 1280×720 的研究保留作为 fallback 资料，不再作为默认安装路线。
+只有真实 K20 证据出现后，才决定是修一处、换候选，还是退回 AidLux。
 
 ---
 
@@ -504,15 +563,13 @@ Owner 手动开机
    → PDD
    → restore
 
-6. AidLux / Alas
-   preflight
-   localhost ADB
-   dependency install
-   one-frame proof
-   one safe action
+6. Azur Lane Android host
+   ALAS-AOS minimal proof
+   → blocker 才切 AzurPilot-for-Android
+   → 两者都 blocker 才回退 AidLux / original Alas
 
-7. PDD × Alas
-   同样验证 preempt/restore
+7. PDD × final Azur Lane runtime
+   只对最终通过的 runtime 验证 coexist / preempt / restore
 
 8. 24h soak
    只观察 Android 已运行期间的真实稳定性
@@ -530,9 +587,9 @@ Owner 手动开机
 - 如何实测点击 latency；
 - MFABD2 怎么安装；
 - MFABD2 第一候选怎么让出手机；
-- Alas 为什么优先 AidLux；
-- Alas 如何通过 localhost ADB 自控同机；
-- mxnet/PyAV 真正可能在哪卡；
+- 为什么 Azur Lane 当前先试 ALAS-AOS、再试 AzurPilot-for-Android；
+- 两个 Android host 的虚拟屏与特权链实际怎么工作；
+- AidLux / localhost ADB / mxnet / PyAV 为什么只保留为 fallback；
 - 如何把三个项目串起来；
 - 断电由 Owner 手动开机，项目不做无人冷启动恢复。
 
@@ -542,8 +599,9 @@ Owner 手动开机
 - 最佳 prepare_lead 是几秒；
 - Node-01 上三种点击方式谁最快；
 - MFABD2 launch 后怎么恢复原 run；
-- AidLux 0.9.2 在这台改机上的实际 Python/native 包状态；
-- 本机 adbd TCP 的最终运行方式。
+- ALAS-AOS 的 Shizuku + VD 在 MIUI 10 / Android 9 是否稳定；
+- AzurPilot-for-Android 的 Root + VD 是否会复现已知 app-current / touch 问题；
+- 只有 Android host 都失败时，AidLux 0.9.2 / local ADB 的具体 fallback 状态。
 
 这些全部已经变成 Final Live 的明确问题，而不是模糊风险。
 

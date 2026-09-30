@@ -1,3 +1,5 @@
+> **REFERENCE ONLY — not default authority.** Current behavior is governed by `START-HERE.md`, `docs/01-architecture.md`, `docs/08-execution-plan.md`, and live evidence. This file preserves preparation/research details and may contain superseded intermediate wording.
+
 # 12｜PDD 调度最小合同
 
 本页只保留 Final Live 前已经被 Reality 支撑的事实。

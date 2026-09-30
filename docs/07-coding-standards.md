@@ -23,7 +23,7 @@ Issue、旧聊天、计划、README、handoff 都可能过期。用户明确的�
 典型例子：
 
 - 改 PDD 检测速度，保留“一天成功后后续时段跳过”；
-- 接 MFABD2，保留 Supervisor 的屏幕所有权；
+- 接 MFABD2，保留“PDD 到点时游戏能够让出、结束后能够恢复”的用户行为；
 - 改恢复逻辑，不能把 Windows 变成 runtime 依赖；
 - 做 Alas 本机化，不重写成熟的游戏任务逻辑。
 
@@ -35,7 +35,7 @@ Issue、旧聊天、计划、README、handoff 都可能过期。用户明确的�
 
 “更安全”“以后可能需要”“生产系统一般这样”不是证据。
 
-尤其防止：Supervisor 和子任务各做 scheduler、两套 claimed_today、两套 watchdog、Adapter 再包 Adapter、测试 cooldown 偷渡生产。
+尤其防止：项目和上游各做一套 scheduler、两套 claimed_date、为了统一外观先造 Adapter、测试 cooldown 偷渡生产。
 
 ## 常见失败模式
 

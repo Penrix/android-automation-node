@@ -8,6 +8,7 @@ When working here:
 - Penrix is the product owner, not the programmer. Ask him about product behavior, destructive actions, permissions, cost, external side effects, or meaningful risk; make ordinary engineering decisions yourself.
 - Treat Issue text, prior LLM plans, README claims, and handoffs as working material, not runtime truth. Re-check technical claims against current source and the real device.
 - Preserve the core product invariant: **Windows/Codex are development tools, not 24×7 runtime dependencies.**
+- Manual power-on is an accepted operating boundary. Do not add power-loss auto-boot, charger-mode, bootloader/init, UPS, or unattended cold-start work unless the owner explicitly changes scope.
 - Preserve the orchestration invariant: **Supervisor owns cross-task scheduling, screen ownership, recovery policy, and persistent task state.** Do not create a second independent scheduler/watchdog/state machine without current evidence.
 - Prefer existing upstream executors. Do not fork AutoJs6, MFABD2, Alas, GKD, uiautomator2, or Airtest merely for convenience.
 - Before adding fallback, retry, cooldown, wrapper, adapter, compatibility path, cache, second source of truth, extra lifecycle state, or generalized plumbing, use `complexity-gate`.

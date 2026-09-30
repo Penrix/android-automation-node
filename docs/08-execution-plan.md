@@ -57,55 +57,69 @@ K20 Android
 
 ---
 
-# Track B｜Azur Lane / Alas
+# Track B｜Azur Lane / AzurPilot-for-Android
 
 ## Offline 已确认
 
-- current Alas 仍保留专门 AidLux 0.92 deploy template / requirements；
-- AidLux 官方 GitHub release 仍提供 `aidlux_0.92.apk`；
-- Snapdragon 855 + 低 Android 的 AidLux/Alas 历史用户路径真实存在；
-- 手机上本机 WebUI `127.0.0.1:22267` 的历史运行案例真实存在；
-- 手机 Docker / 云手机里本机/局域网 ADB 的 Alas 路径真实存在；
-- Alas 自己有完整 scheduler；
-- WebUI Start/Stop 直接控制每个配置的 Alas 子进程；
-- Start 后 scheduler 重新读取同一 config 的 Enable / NextRun；
-- Alas 画面标准是 1280×720；
-- ARM64 mxnet 与 PyAV 是有证据的依赖风险。
+- 上游：`wess09/AzurPilot-for-Android`；
+- Android 专用仓库，不是泛 Linux/Docker 包装；
+- minSdk 28 = Android 9；
+- ARM64 full APK 已发布；
+- Root / Shizuku 双后端；
+- Node-01 已 Root，首选 Root backend；
+- 内置 Ubuntu/PRoot + AzurPilot runtime；
+- 使用 MaaFwApp 派生的 1280×720 BACKGROUND 虚拟屏；
+- Python 端已有专门 `azurpilot_android` screenshot/control backend；
+- Android host 与 runtime 可以分别更新；
+- 主屏不需要为了 Alas 改成 720P。
 
-## 第一候选拓扑
+截至 2026-09-30，滚动 Latest 中最新已发布 ARM64 full APK：
 
-```text
-K20 Android 9
-├─ Azur Lane
-└─ official AidLux 0.92
-   └─ current Alas
-      └─ ADB → same Android device
-```
+`AzurPilot-Android-1.2.11-arm64-v8a-full.apk`
+
+SHA-256：
+
+`900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`
 
 ## Final Live 最小验收
 
-1. 从 AidLux 官方 GitHub release 安装 0.92；
-2. 初始化 AidLux；
-3. 先运行只读 `tools/alas/aidlux-preflight.sh`；
-4. 确认 `/usr/bin/python`、`git`、`adb`、ARM64 与 pip；
-5. clone current Alas；
-6. 使用上游自己的 AidLux 0.92 deploy template / requirements；
-7. 真报错时只处理实际 blocker；
-8. 先让 ADB 看见同一台 K20，不预设 serial；
-9. 先尝试 root `wm size 1280x720`，以 Alas 实际 `[Screen_size]` 为准；若 K20 不生效，再研究 root 分辨率工具；
-10. 启动 `python gui.py`；
-11. 确认手机本地 WebUI；
-12. 让 Alas 取得一帧并识别主页；
-13. 再跑一个最小安全任务；
-14. 最后验证 WebUI Stop → Start 后 scheduler 是否能回到任务轨道。
+1. 安装当前官方 ARM64 full APK；
+2. 选择 Root backend；
+3. 让内置 Runtime 完成初始化；
+4. 保持 BACKGROUND / 1280×720 虚拟屏；
+5. 配置一个最小 AzurPilot 实例；
+6. 启动碧蓝航线；
+7. 确认游戏只在虚拟屏运行，物理屏仍可正常使用；
+8. 先跑一个最小安全任务；
+9. 再检查截图颜色、点击/滑动、Restart、Stop/Start；
+10. 最后观察 6 GB RAM 下的长期稳定性。
 
-## 当前不做
+## 当前已知风险
 
-- 不先改 Alas；
-- 不先 fork；
-- 不混用网上新版 requirements；
-- 不同时铺 Termux / proot / chroot / Docker 多套方案；
-- 不为了未来 PDD 先写 pause/resume wrapper。
+项目非常新，不能把“minSdk 28”当成 K20 已验收。
+
+当前已有真实问题：
+
+- 某些真机虚拟屏 `mCurrentFocus` 不稳定，曾导致误判游戏未运行 / Restart 循环；
+- 红米 K50 用户报告部分岛屿任务触控/滑动失败；
+- 项目 issue 里曾记录“无法停止调度器，只能强关软件”；
+- 已验证机型主要是较新 Android，尚未看到 K20 / Android 9 全链路报告。
+
+因此状态仍是：
+
+`SOURCE / PACKAGE SUPPORTED, NODE-01 LIVE UNVERIFIED`
+
+## Fallback
+
+只有 Android 专用 APK 在 K20 出现明确 blocker 时，才回退：
+
+```text
+original Alas
++ official AidLux 0.92
++ local ADB
+```
+
+ARM64 Docker、Termux/proot 手工部署、Headless 都不作为第一 fallback。
 
 ---
 
@@ -126,10 +140,10 @@ SOURCE / PACKAGE VERIFIED
 MFABD2 on K20:
 LIVE UNVERIFIED
 
-Alas phone-local architecture:
-SOURCE + HISTORIC/COMMUNITY GROUNDED
+AzurPilot-for-Android architecture/package:
+SOURCE / PACKAGE VERIFIED
 
-Alas on K20:
+AzurPilot-for-Android on K20:
 LIVE UNVERIFIED
 ```
 

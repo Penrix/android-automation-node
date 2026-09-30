@@ -537,3 +537,69 @@ K20 不会来电自动开机
 不做 charger-mode、bootloader/init、UPS 或无人冷启动恢复。
 
 这两处修正保留在历史中，是认知形成的一部分；当前实施以最新文档为准。
+
+
+---
+
+## 12. 后续纠正：两个游戏不是同一种执行器
+
+继续读当前上游源码后，早期“两个游戏都需要让出物理屏”的认知被修正。
+
+### MFABD2
+
+MFABD2 Android 不是单纯在主屏点击。
+
+它固定打包的 MaaFwApp 已经支持：
+
+```text
+BACKGROUND
+→ 创建虚拟屏
+→ Brown Dust 2 移到虚拟屏
+→ MaaFramework 在虚拟屏截图/点击
+→ 物理屏继续正常使用
+```
+
+而且 BACKGROUND 是默认运行模式，默认分辨率 P720。
+
+因此当前第一候选是：
+
+> 棕色尘埃2长期留在 MFABD2 虚拟屏跑，不为了其他物理屏任务主动停掉它。
+
+只有 Node-01 真机证明后台模式有兼容问题，才重新考虑停止/恢复。
+
+### Alas
+
+Alas 完全不同。
+
+它是：
+
+```text
+Linux/Python controller
+→ ADB / uiautomator2 / scrcpy
+→ Android 主显示
+```
+
+没有发现 MaaFwApp 同等级的虚拟屏后台宿主。
+
+Alas 自己的 WebUI 已经提供 Start / Stop：
+
+- Stop 直接 kill 当前配置的 Alas 子进程；
+- Start 用同一 config 重新创建 scheduler；
+- scheduler 重新读取 Scheduler.Enable / Scheduler.NextRun 并继续选任务。
+
+所以也不需要先造统一 pause/resume Adapter。
+
+但 Stop 是硬停，不是无损暂停；正在执行中的具体页面如何恢复，必须真机验证。
+
+### 形成的新原则
+
+不能为了“统一接口”把不同上游压成同一种模型。
+
+先尊重真实运行结构：
+
+```text
+MFABD2 = Android native + virtual display
+Alas   = Python + ADB + main display
+```
+
+再只解决各自真实存在的缺口。

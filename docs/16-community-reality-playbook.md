@@ -211,9 +211,7 @@ Final Live 要实测：
 
 花多少毫秒。
 
-然后才生成：
-
-`runtime/pdd/schedule.json`
+然后才直接用 AutoJs6 TimedTask 注册对应的提前启动时间。
 
 例如如果实测安全提前量是 18 秒，才会注册类似：
 
@@ -472,7 +470,7 @@ adb devices
 
 不在准备阶段写入永久 boot property。
 
-只有 localhost ADB proof 成功以后，才讨论如何在开机时自动恢复它。
+只有 localhost ADB proof 成功以后，才决定日常运行时如何最简便地启动它。断电后的冷启动仍由 Owner 手动开机，不属于无人恢复范围。
 
 ---
 

@@ -6,6 +6,17 @@
 
 把 Redmi K20 Pro 变成一个脱离 Windows/Codex 也能长期自主运行的 Android Automation Node。
 
+运行边界由 Owner 明确为：
+
+```text
+断电/关机
+→ Owner 手动开机
+→ Android 进入可用状态
+→ 本项目开始负责长期自动化
+```
+
+不做来电自启、charger-mode、bootloader/init 或无人冷启动恢复。
+
 最终闭环仍然不变：
 
 ```text

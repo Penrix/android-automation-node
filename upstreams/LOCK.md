@@ -32,3 +32,13 @@ Last reviewed: 2026-09-30.
 | AirtestProject/Airtest | `d729c631d2032521be1e2168a249a2a89d79af2a` | visual specialist/fallback |
 
 Freshest is not automatically best. Live evidence must keep its exact upstream revision, environment, behavior, and date scope.
+
+
+## Game runtime additions reviewed 2026-09-30
+
+| Source | Reviewed state | Conclusion |
+|---|---|---|
+| Aliothmoon/MaaFwApp | MFABD2-pinned `f4f6f220e21e3a1b7b0cf5df4bdbe0ec04c668f7`; upstream main also reviewed at `b4d10d572b17c3edab2f2b9f6c9032a856a1a93c` | Pinned version already has Root backend, BACKGROUND virtual display, default BACKGROUND/P720, foreground service and scheduling |
+| aidlearning/AidLearning-FrameWork | official release `v0.92` | Official asset `aidlux_0.92.apk` still exists; use this as first K20 Alas runtime candidate rather than an untrusted third-party APK |
+| linwei5d/AzurLaneAutoScript-Docker-Arm64 | repo pushed through 2024-05-19 | Historical phone-Docker + host-network + local ADB architecture proof only; do not use stale image as production source |
+| LittleMio/AzurLaneAutoScript-docker-arm64 | repo pushed through 2026-06-02 | Current ARM64 Docker packaging evidence; targets generic ARM64 Linux, not automatically Android/AidLux |

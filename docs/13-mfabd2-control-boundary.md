@@ -109,12 +109,9 @@ am force-stop io.github.sunyink.mfabd2
 
 当前仍没有足够源码证据证明只 launch MFABD2 就会自动续上之前的任务。
 
-所以准备工具只提供：
+因此 Final Live 直接调用这两个现成边界即可，不再为一行调用维护 wrapper 文件。
 
-- `mfabd2-stop.js`
-- `mfabd2-launch.js`
-
-没有伪造 `resume()`。
+仍然没有 `resume()`，因为恢复行为没有 live 证据。
 
 ---
 

@@ -101,8 +101,6 @@
 
 # Phase P1｜跨应用抢占合同准备
 
-源码审计后不再实现常驻 Supervisor。
-
 AutoJs6 TimedTask 已成为 PDD 时间调度的唯一 owner；MFABD2 / Alas 保留自己的内部调度。
 
 项目首版只准备跨应用抢占所需的最小事实：

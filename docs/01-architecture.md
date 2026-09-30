@@ -6,7 +6,7 @@
 
 ```text
 Brown Dust 2 → MFABD2 Android
-Azur Lane     → AidLux + Alas
+Azur Lane     → AzurPilot-for-Android
 ```
 
 PDD 暂时后置；它需要真实页面和时序，等游戏链路稳定后再上机处理。
@@ -35,39 +35,36 @@ Node-01 已 Root，所以第一候选直接选择 MaaFwApp 的 Root backend，�
 
 ### Azur Lane
 
-Alas 是 Python controller，通过 ADB/uiautomator2/scrcpy 等方式操作 Android 主显示。
-
-手机本机化第一候选：
+当前第一候选改为：
 
 ```text
-官方 AidLux 0.92 APK
-+ Android 9 / ARM64
-+ current Alas source
-+ Alas 自带 AidLux 0.92 requirements
-+ 本机 ADB
+wess09/AzurPilot-for-Android
+→ 官方 Android ARM64 full APK
+→ Root backend
+→ 内置 Ubuntu/PRoot + AzurPilot runtime
+→ 1280×720 后台虚拟屏
+→ Azur Lane
 ```
 
-Alas WebUI 自己管理每个配置实例的子进程：
+理由：
 
-```text
-Start
-→ 用同一 config 启动 scheduler loop
+- 项目 minSdk = 28，正好是 Android 9；
+- 官方支持 ARM64；
+- 同时实现 Shizuku / Root，Node-01 直接用 Root；
+- 内置 Linux/Python runtime，不再需要单独安装 AidLux / Termux；
+- 专门的 `azurpilot_android` 后端不走 ADB/uiautomator2，而是通过本机特权桥截图/触控虚拟屏；
+- 虚拟屏固定横屏 1280×720，因此不需要先改 K20 主显示分辨率；
+- 已发布可安装的 ARM64 full APK。
 
-Stop
-→ kill 当前 Alas 子进程
+原版 Alas + 官方 AidLux 0.92 保留为 fallback，不再是第一路线。
 
-再次 Start
-→ 重新读取该 config 的 Scheduler.Enable / NextRun
-→ 按优先级继续调度
-```
-
-这不是无损暂停：正在执行到一半的具体任务会怎样恢复，要靠任务自己的页面复位能力和真机验证。
+这个 Android 项目很新，K20/Android 9 尚无完整 live evidence，因此仍然必须真机验收。
 
 ## 上游各自拥有自己的调度
 
 ```text
 MFABD2 → 自己的运行配置 / 定时 / 前台服务 / 后台虚拟屏
-Alas   → 自己的 Scheduler.Enable / NextRun / priority / error handling
+AzurPilot-for-Android → 内置 AzurPilot scheduler + Android host runtime
 ```
 
 本项目不重写这两套调度。
@@ -89,11 +86,12 @@ Alas   → 自己的 Scheduler.Enable / NextRun / priority / error handling
 - 物理屏在游戏后台运行期间是否真的可自由使用；
 - 完整日常、截图颜色和点击精度是否稳定。
 
-### Alas
+### AzurPilot-for-Android
 
-- 官方 AidLux 0.92 在这台 K20 上的实际 Linux/Python 环境；
-- 当前 Alas 的 AidLux requirements 能否直接安装；
-- mxnet / PyAV 具体会不会成为 blocker；
-- Android 本机 ADB 的实际 serial/连接方式；
-- 1280×720 要如何在这台真机上满足；
-- Start → Stop → Start 后具体游戏任务如何恢复。
+- 当前 ARM64 full APK 能否在 MIUI 10 / Android 9 正常安装和初始化 Runtime；
+- Root backend 能否稳定拉起特权桥；
+- 1280×720 BACKGROUND 虚拟屏能否稳定运行碧蓝航线；
+- 截图颜色、点击/滑动在 K20 上是否准确；
+- 当前已知 Android 虚拟屏前台判断/触控问题是否会在 K20 复现；
+- 6 GB RAM 下游戏 + PRoot/AzurPilot 的长期资源占用是否可接受；
+- 停止/重新启动调度后的恢复是否稳定。

@@ -74,3 +74,13 @@ Emulator 可证明通用 Android 行为；以下应尽量真机验收：MIUI、r
 ## Handoff
 
 最终说清楚：改了什么、现在能做什么、证据是什么、哪些没证明、下一步 Coding Agent 做什么、是否真的需要 Owner 决定。
+
+## Reality Reconnaissance — PRE / POST
+
+Every production-code task uses `reality-reconnaissance` before coding and again against the finished diff.
+
+PRE must gather the smallest relevant set of current repo facts, official/platform/upstream source and tests, current Issues/releases, real user field reports, and Node-01 environment facts. For external integrations, answer how the thing is actually installed, configured, authorized and run; what versions and permissions are required; which component owns the behavior; what users report as the common working/failing path; and what real-device observation would prove success.
+
+POST is an attack on the final mechanism, not a reread of PRE notes. Inventory the concrete APIs, versions, paths, permissions, state ownership, fallbacks/retries and operational steps now present in the diff, then re-check those exact assumptions. Mark each material assumption `MATCH`, `MISMATCH`, or `UNVERIFIED`. Fix MISMATCH before completion; carry material UNVERIFIED items into the evidence status.
+
+Do not search merely to decorate a plan. Research must eliminate or constrain implementation choices. Real user reports reveal operational failure modes but do not substitute for upstream contracts or Node-01 live evidence.

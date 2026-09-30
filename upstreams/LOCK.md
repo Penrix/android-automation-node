@@ -8,10 +8,11 @@ Last reviewed: 2026-09-30.
 
 | Source | Reviewed state | Decision |
 |---|---|---|
-| Penrix/ai-coding-cognition | `187e7e06011ae4dac7ae5cf23f508d1c0a3763fe` | Copied Penrix Core v0.3.0 source |
+| Penrix/ai-coding-cognition | `487efcfb359f2700bd23de06fdd8c3cb141a92d7` | Copied Penrix Core v0.4.0 source with Reality Reconnaissance PRE/POST |
 | openai/plugins | `5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f` | Primary Codex curated source |
 | obra/superpowers | v6.4.2, `8ca22dba9a94f28898bbce59f2537ff4d87c747d` | Semantic upstream; newer than curated copy |
 | OpenAI curated Superpowers | v6.3.0 | Default Codex source |
+| obra/superpowers research tracker | Issue #2129 open; PR #2116 open at `425793e18117e9931a49bbf003545d66080cce02` when reviewed | Upstream pre-design prior-art research is useful but not yet released and does not cover full Penrix PRE/POST/user-field requirement |
 | CodeRabbit | v1.1.4 | Diff review |
 | Codex Security | v0.1.24 | Security review |
 | Test Android Apps | v0.1.2 | Emulator evidence; not physical-K20 acceptance |

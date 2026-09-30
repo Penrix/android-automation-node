@@ -18,6 +18,17 @@ Core authority:
 - LLM-written contracts and old handoffs are not Reality.
 - Evidence determines completion.
 
+## Mandatory coding gate — Reality Reconnaissance
+
+For every production-code task, use `plugins/penrix-coding-core/skills/reality-reconnaissance/SKILL.md` twice:
+
+1. **PRE before the first production edit** — establish current repo/source ownership and, when external/platform/device facts matter, current official/upstream source plus real user operational reports. Recover the concrete install/config/permission/run path and the target acceptance observation.
+2. **POST against the actual final diff** — re-query the exact APIs, versions, permissions, ownership and operational assumptions the implementation ended up using. Classify material assumptions as `MATCH`, `MISMATCH`, or `UNVERIFIED`.
+
+For Node-01 work, user field reports are especially relevant to MIUI/root/Accessibility/screenshot/OCR/app-timing behavior, but they are sensors rather than automatic truth; corroborate with upstream evidence or real-device reproduction when practical.
+
+Research constrains implementation. It does not replace K20 physical-device verification.
+
 ## A. Natural-language feature / bug / goal
 
 Read `intent-contract` and `docs/07-coding-standards.md`, then only the smallest relevant product docs:

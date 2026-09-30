@@ -20,3 +20,5 @@ When working here:
 - Do not implement anti-cheat bypass, root hiding, detection evasion, or similar mechanisms.
 - Preserve cognition history. Correct factual mistakes explicitly; do not erase the reasoning trail merely because the current conclusion changed.
 - When material upstream behavior changes, update `upstreams/README.md` / `upstreams/LOCK.md` if that change affects our conclusions.
+- Before any production-code edit, use `reality-reconnaissance` PRE: collect current project facts and, when material, official/upstream evidence, real user field reports, and the concrete install/config/permission/run path.
+- After implementation and before final self-review, use `reality-reconnaissance` POST against the actual diff; classify material external/operational assumptions as MATCH, MISMATCH, or UNVERIFIED before runtime acceptance.

@@ -1,150 +1,247 @@
-# 04｜游戏自动化：当前最小路线
+# 04｜两个游戏的当前 Reality
 
-目标不是自己重写游戏机器人，而是复用成熟执行器，让 PDD 在三个时间窗能临时拿到手机。
+本页只记录目前已经从上游源码、官方 issue 和真实用户运行案例确认的东西。
 
-## 1. 总原则
+# 1. Brown Dust 2 / MFABD2
+
+上游：`sunyink/MFABD2`。
+
+当前正式 Android 路线：
 
 ```text
-Brown Dust 2
-→ MFABD2 Android APK
-
-Azur Lane
-→ Alas 本机化
-
-PDD
-→ AutoJs6 自定义任务
+MFABD2 Android ARM64 APK
+→ MaaFwApp
+→ MaaFramework AndroidNativeController
+→ Brown Dust 2
 ```
 
-项目不建立统一 GameBot interface，不重新实现游戏内部日常、调度或 watchdog。
+要求：Android 9+、ARM64、Root 或 Shizuku、项目要求的游戏语言/画面设置。
 
----
+Node-01 是 Android 9 / ARM64 / Root，基础条件吻合；仍需真机验收。
 
-# 《棕色尘埃2》 / MFABD2
+## 1.1 Root 后端
 
-上游：
+MFABD2 固定打包的 MaaFwApp 已经同时实现 SHIZUKU / ROOT 后端。
 
-- https://github.com/sunyink/MFABD2
+Root 路线使用 libsu 拉起特权进程；Node-01 已 Root，因此第一候选直接用 ROOT，不额外引入 Shizuku。
 
-当前上游明确提供 Android ARM64 APK，并要求：
+## 1.2 最重要的结构：后台虚拟屏
 
-- Android 9+；
-- ARM64；
-- Root 或 Shizuku；
-- 对应的游戏语言/画面配置。
-
-Node-01 基础条件吻合，但仍是：
+MFABD2 当前固定的 MaaFwApp commit 已经明确支持：
 
 ```text
-PACKAGE/SOURCE SUPPORTED
+FOREGROUND
+→ 操作主屏
+
+BACKGROUND
+→ 建虚拟屏
+→ 把目标 App 拉到虚拟屏
+→ native controller 在虚拟屏截图/点击
+```
+
+MaaFwApp README 对 BACKGROUND 的定义就是“在虚拟屏上跑任务，手机可正常使用”。
+
+AppSettings 默认：
+
+```text
+runMode = BACKGROUND
+resolutionPreference = P720
+screenSaverEnabled = false
+closeAppAfterTask = false
+```
+
+所以当前第一候选不是“把 MFABD2 停掉再做别的事”，而是：
+
+```text
+MFABD2 长期在虚拟屏跑 Brown Dust 2
++
+物理屏保持可用
+```
+
+只有 K20 真机证明 BACKGROUND 模式有兼容问题，才考虑退回前台/停止方案。
+
+## 1.3 分辨率
+
+MFABD2 项目的识别坐标基准是 1280×720；MaaFwApp 后台模式默认 P720，正好匹配。
+
+不要无理由先改 1080P。
+
+## 1.4 保活与调度
+
+MaaFwApp 本身已经有：
+
+- 前台服务；
+- 电池白名单相关权限；
+- 定时执行；
+- 运行配置；
+- 特权进程 watchdog；
+- 后台虚拟屏；
+- 日志/通知。
+
+因此不在本仓库再造 MFABD2 scheduler / watchdog。
+
+## 1.5 当前真实风险
+
+MFABD2 自己的 Android 文档仍明确把这些留给真机验收：
+
+- 完整任务集；
+- screenshot/click 精度；
+- Android 截图整体偏暗可能影响颜色匹配；
+- 升级/覆盖资源等边界。
+
+所以状态是：
+
+```text
+ARCHITECTURE / PACKAGE / SOURCE VERIFIED
 NODE-01 LIVE UNVERIFIED
 ```
 
-Final Live 只需要先证明：
+---
+
+# 2. Azur Lane / Alas
+
+上游：`LmeSzinc/AzurLaneAutoScript`。
+
+Alas 已经负责游戏内部的主线、活动、委托、科研、后宅、商店、大世界、心情和任务调度。
+
+项目不重写游戏逻辑。
+
+## 2.1 手机上的结构
+
+Alas 没有 MFABD2 那种 Android native 虚拟屏宿主。
+
+它的典型控制链是：
 
 ```text
-安装
-→ Root 授权
-→ 跑一个最小任务
-→ PDD 前让 MFABD2 退出
-→ 观察真实恢复入口
+Python Alas
+→ adbutils / uiautomator2 / scrcpy / ADB
+→ Android 主显示上的 Azur Lane
 ```
 
-已知第一候选边界：
+所以手机本机化要解决的是“Python controller 放在哪里”，不是重写 Alas。
+
+## 2.2 第一候选：官方 AidLux 0.92
+
+AidLux 官方 GitHub release 仍保留：
 
 ```text
-launch:
-app.launchPackage("io.github.sunyink.mfabd2")
-
-stop:
-shell("am force-stop io.github.sunyink.mfabd2", true)
+v0.92
+aidlux_0.92.apk
 ```
 
-如果 launch 后能自然续跑，就不加任何额外层。
+这不是第三方 APK。
 
-只有真机证明这两条不够，才补最小缺口。
+当前 AidLux 2.x 已转向 Android 13+，不适合 Node-01 Android 9；而 Alas 自己当前源码仍保留专门的 `deploy/AidLux/0.92/requirements.txt` 和 AidLux deploy template。
+
+2026 年 Alas issue #5739 的用户反馈也与 Node-01 高度吻合：AidLux 0.9.2 + Snapdragon 855 + 低版本 Android 跑得顺，Android 10 正常，而高版本 Android 才是问题区。
+
+因此第一候选就是旧官方 0.92，而不是 Termux。
+
+## 2.3 本机 ADB
+
+历史手机运行案例和云手机日志都证明了这种拓扑：
+
+```text
+Android
+├─ Azur Lane
+└─ AidLux/Linux
+   └─ Alas
+      └─ adb → 同一台 Android
+```
+
+`127.0.0.1:5555` 是已有手机/云手机方案里常见的 serial，但不是现在就写死的 K20 事实。
+
+Final Live 先让 `adb devices` 告诉我们真实 serial，再填 Alas 配置。
+
+## 2.4 分辨率
+
+Alas 的 assets 和设备检查以 1280×720 为标准；源码会对不支持的分辨率直接 RequestHumanTakeover。
+
+因此真机本机化除了 ADB 之外，还有一个明确问题：如何让 Alas 看到稳定的 1280×720 游戏画面。
+
+这一点不能用 MFABD2 的 MaaFwApp 虚拟屏能力直接外推给 Alas。
+
+## 2.5 Start / Stop / Resume 的真实语义
+
+WebUI 的 Start/Stop 已经是上游自己的控制面：
+
+```text
+Start
+→ ProcessManager 创建 Alas 子进程
+→ AzurLaneAutoScript(config_name).loop()
+
+Stop
+→ ProcessManager 直接 kill 子进程
+→ 记录 Manual stop
+
+再次 Start
+→ 用同一个 config 重新创建进程
+→ scheduler 重新读 Scheduler.Enable / Scheduler.NextRun
+→ 重新选择 pending / waiting task
+```
+
+这说明不需要我们先造一套外部 pause/resume API。
+
+但 Stop 是硬停进程，不是优雅地等当前关卡到安全点。
+
+所以真机必须验证：
+
+```text
+正在挂机
+→ Stop
+→ Start
+→ Alas 能否从当前游戏页面重新找回自己的任务轨道
+```
+
+## 2.6 Alas 自己已经拥有调度和恢复逻辑
+
+Alas scheduler 会持久化每个任务的 Enable / NextRun，按优先级选择任务，并能处理游戏未运行、卡死、游戏 bug、服务器维护等情况。
+
+不要在外面复制第二套游戏 scheduler。
+
+## 2.7 当前依赖风险
+
+当前 Alas 仍是 Python 3.7 时代依赖栈，AidLux 专用 requirements 包含旧版：
+
+- adbutils 0.11.0；
+- uiautomator2 2.16.17；
+- mxnet 1.6.0；
+- av 10.0.0；
+- scipy 1.7.1；
+- cnocr 1.2.2 等。
+
+真实风险目前有两个证据最强：
+
+- ARM64 mxnet；
+- PyAV / FFmpeg native build。
+
+上游 ARM64 Docker 自己也专门替换过 mxnet；Termux 用户也真实卡过 mxnet。
+
+因此不要混用网上新版 requirements；先严格走 Alas 自带 AidLux 0.92 requirements，真报错再处理。
+
+## 2.8 当前状态
+
+```text
+PHONE-LOCAL TOPOLOGY: HISTORICALLY / COMMUNITY PROVEN
+AIDLUX 0.92 SOURCE PATH: VERIFIED
+CURRENT ALAS ON NODE-01: LIVE UNVERIFIED
+```
 
 ---
 
-# 《碧蓝航线》 / Alas
-
-上游：
-
-- https://github.com/LmeSzinc/AzurLaneAutoScript
-
-Alas 已经负责碧蓝航线自己的主线、活动、委托、科研、后宅、战术学院、商店、大世界、心情控制和内部任务调度。
-
-因此不使用 AutoJs6 重写这些能力。
-
-当前唯一集成问题：
-
-> 如何让 Alas controller 也在 K20 Pro 本机运行，而不是依赖 Windows。
-
-基于当前源码和真实用户反馈，第一候选已经收敛为：
+# 3. 两条路线的本质区别
 
 ```text
-AidLux 0.9.2
-+ Android 9
-+ Snapdragon 855
-+ Alas upstream AidLux configuration
-+ localhost ADB
+MFABD2
+→ Android 原生宿主
+→ native controller
+→ 后台虚拟屏
+→ 物理屏可继续使用
+
+Alas
+→ Linux/Python controller
+→ ADB 控主 Android 显示
+→ 没有同等级的后台虚拟屏机制
 ```
 
-Final Live 第一阶段只证明：
-
-```text
-AidLux starts
-→ Python / adb available
-→ current Alas loads
-→ localhost ADB sees same phone
-→ Alas gets one screenshot
-```
-
-在这个 proof 通过前：
-
-- 不 fork Alas；
-- 不做通用安装器；
-- 不同时维护 Termux/proot/chroot/Docker 多路线。
-
-只有第一候选出现明确 blocker，才进入第二候选。
-
----
-
-# PDD 如何与游戏共存
-
-真实闭环只有：
-
-```text
-游戏执行器自己正常跑
-→ AutoJs6 PDD TimedTask 提前触发
-→ 用该执行器真实可用的最小停止方式让出手机
-→ PDD
-→ 用真实验证出来的入口恢复原游戏执行器
-```
-
-MFABD2 和 Alas 内部怎么安排任务，继续由它们自己负责。
-
----
-
-# 资源约束
-
-Node-01 是 6 GB RAM。
-
-不预先设计“多游戏并行”。原则只是：同一时刻不要无证据地同时常驻多个大型游戏 + 多套重运行时。
-
-具体内存是否足够，由 Final Live 和后续 soak 观察，不靠猜测加限制。
-
----
-
-# 开发工具
-
-需要时使用 ADB / scrcpy、uiautomator2、Airtest / OpenCV、GKD Inspect。
-
-这些是开发/诊断工具，不是 24×7 runtime 前置依赖。
-
----
-
-# 安全边界
-
-不做反作弊绕过、Root 隐藏、Hook 反检测、伪造设备以规避封禁或绕过游戏安全机制。
-
-只处理用户自己设备上的重复 UI 自动化。
+因此以后任何跨应用处理都必须分别设计，不能再把两个游戏抽象成同一种“暂停/恢复接口”。

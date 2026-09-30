@@ -1,446 +1,153 @@
-# 04｜游戏自动化：通用认知与两条现成路线
+# 04｜游戏自动化：当前最小路线
 
-## 1. 游戏挂机的成熟形态
+目标不是自己重写游戏机器人，而是复用成熟执行器，让 PDD 在三个时间窗能临时拿到手机。
 
-目标不是“自动点几下”。
-
-能力通常从：
+## 1. 总原则
 
 ```text
-固定坐标宏
-↓
-Accessibility
-↓
-截图 / 找图 / OCR
-↓
-状态机
-↓
-定时调度
-↓
-Watchdog
-↓
-Recovery
-↓
-长期无人值守
+Brown Dust 2
+→ MFABD2 Android APK
+
+Azur Lane
+→ Alas 本机化
+
+PDD
+→ AutoJs6 自定义任务
 ```
 
-真正高价值的是：
-
-> 用户只保留想玩的部分，把重复性劳动全部交给节点。
+项目不建立统一 GameBot interface，不重新实现游戏内部日常、调度或 watchdog。
 
 ---
 
-## 2. 保活型挂机是最便宜的自动化
-
-如果游戏本身已经有：
-
-- 自动战斗；
-- 自动寻路；
-- 自律；
-- 重复战斗；
-
-那么外部自动化不应该重新实现战斗 AI。
-
-只需要负责：
-
-```text
-启动
-→ 进入目标玩法
-→ 开自动
-→ 等结算
-→ 重复
-→ 资源满 / 异常时处理
-```
-
-这种最稳定。
-
----
-
-## 3. 手机上只建议同时跑一个主要重游戏
-
-Node-01 是 6 GB RAM。
-
-当前原则：
-
-```text
-常驻：
-1 个主要游戏
-+
-轻量 Supervisor
-
-其他游戏：
-按时启动
-→ 做完日常
-→ 退出
-```
-
-不要为了“多任务”让多个大型游戏、OCR、Python 环境同时抢内存。
-
----
-
-# 《棕色尘埃2》
-
-## 4. 现成项目：MFABD2
+# 《棕色尘埃2》 / MFABD2
 
 上游：
 
 - https://github.com/sunyink/MFABD2
 
-项目基于 MaaFramework。
-
-当前仓库已经明确提供：
-
-```text
-MFABD2-<版本>-android-arm64.apk
-```
-
-Android 端要求：
+当前上游明确提供 Android ARM64 APK，并要求：
 
 - Android 9+；
 - ARM64；
-- Root 或 Shizuku 授权；
-- 游戏使用项目要求的语言 / 画面配置。
+- Root 或 Shizuku；
+- 对应的游戏语言/画面配置。
 
-Node-01：
-
-```text
-Android 9
-ARM64
-Root
-```
-
-从基础条件上吻合。
-
----
-
-## 5. MFABD2 已覆盖的能力
-
-当前上游 README 已列出大量完整任务，例如：
-
-- 启动 / 更新游戏；
-- 自动前置配置；
-- 狩猎场；
-- 圣石洞穴；
-- 肉鸽塔；
-- PVP；
-- 赛季活动；
-- 装备制作 / 强化 / 分解 / 精炼；
-- 每日免费抽；
-- 优惠抽；
-- 卡池保底停抽；
-- 地图资源；
-- 宠物派遣；
-- 餐馆；
-- 公会；
-- 日常 / 活动 / 通行证 / 邮件；
-- 自动钓鱼；
-- 跑商。
-
-因此：
-
-> 不应先用 AutoJs6 重写这些能力。
-
----
-
-## 6. Android 版的现实边界
-
-Android APK 是上游当前明确支持的路线，但它是比较新的端。
-
-上游文档也保留了真机验收边界：
-
-- 部分 agent 回调已验证；
-- 完整任务仍需更多实机验收；
-- 截图亮度 / 颜色匹配等上游问题可能影响真机；
-- 启动、更新、覆盖升级等路径仍在演进。
-
-因此本仓库不能写成：
-
-> “MFABD2 在 K20 Pro 已验证完美可用。”
-
-当前状态应是：
+Node-01 基础条件吻合，但仍是：
 
 ```text
-ARCHITECTURE SUPPORTED
+PACKAGE/SOURCE SUPPORTED
 NODE-01 LIVE UNVERIFIED
 ```
 
-下一步应该先装官方 APK 实测。
+Final Live 只需要先证明：
+
+```text
+安装
+→ Root 授权
+→ 跑一个最小任务
+→ PDD 前让 MFABD2 退出
+→ 观察真实恢复入口
+```
+
+已知第一候选边界：
+
+```text
+launch:
+app.launchPackage("io.github.sunyink.mfabd2")
+
+stop:
+shell("am force-stop io.github.sunyink.mfabd2", true)
+```
+
+如果 launch 后能自然续跑，就不加任何额外层。
+
+只有真机证明这两条不够，才补最小缺口；不先造 BrownDust2Adapter。
 
 ---
 
-## 7. MFABD2 与 Supervisor 的关系
-
-理想形态：
-
-```text
-Supervisor
-↓
-BrownDust2Adapter
-↓
-MFABD2 Android
-↓
-棕色尘埃2
-```
-
-Adapter 至少要能表达：
-
-```text
-start
-pause / safe-stop
-resume
-health
-recover
-```
-
-如果上游没有这些控制接口，再决定：
-
-- 外部通过 Android process / Activity 控；
-- 通过配置 / Intent 控；
-- 还是 fork 增加接口。
-
-不要一开始 fork。
-
----
-
-# 《碧蓝航线》
-
-## 8. 现成项目：AzurLaneAutoScript / Alas
+# 《碧蓝航线》 / Alas
 
 上游：
 
 - https://github.com/LmeSzinc/AzurLaneAutoScript
 
-Alas 是成熟的碧蓝航线专用机器人。
+Alas 已经负责碧蓝航线自己的主线、活动、委托、科研、后宅、战术学院、商店、大世界、心情控制和内部任务调度。
 
-上游定位本身就是：
+因此不使用 AutoJs6 重写这些能力。
 
-> 为 7×24 场景设计，接管近乎全部碧蓝航线玩法。
+当前唯一集成问题：
 
-能力包括：
+> 如何让 Alas controller 也在 K20 Pro 本机运行，而不是依赖 Windows。
 
-- 主线；
-- 活动；
-- 委托；
-- 科研；
-- 后宅；
-- 战术学院；
-- 商店；
-- 舰队 / 猫；
-- 每日；
-- 演习；
-- 作战档案；
-- 大世界；
-- 心情控制；
-- 无缝调度。
+基于当前源码和真实用户反馈，第一候选已经收敛为：
 
-因此同样：
+```text
+AidLux 0.9.2
++ Android 9
++ Snapdragon 855
++ Alas upstream AidLux configuration
++ localhost ADB
+```
 
-> 不应从零写一个 AutoJs6 碧蓝航线机器人。
+Final Live 第一阶段只证明：
+
+```text
+AidLux starts
+→ Python / adb available
+→ current Alas loads
+→ localhost ADB sees same phone
+→ Alas gets one screenshot
+```
+
+在这个 proof 通过前：
+
+- 不 fork Alas；
+- 不做通用安装器；
+- 不做 AzurLaneAdapter；
+- 不同时维护 Termux/proot/chroot/Docker 多路线。
+
+只有第一候选出现明确 blocker，才进入第二候选。
 
 ---
 
-## 9. Alas 的结构问题
+# PDD 如何与游戏共存
 
-Alas 传统形态：
+当前不是常驻 Supervisor。
 
-```text
-Python 主控
-→ ADB
-→ Android 设备 / 模拟器
-```
-
-如果 Python 主控在 Windows：
-
-> Windows 必须长期运行。
-
-这不符合本项目目标。
-
-本项目要求：
+真实闭环只有：
 
 ```text
-电脑关掉
-→ K20 Pro 仍可挂机
+游戏执行器自己正常跑
+→ AutoJs6 PDD TimedTask 提前触发
+→ 用该执行器真实可用的最小停止方式让出手机
+→ PDD
+→ 用真实验证出来的入口恢复原游戏执行器
 ```
 
-所以问题不是“Alas 功能够不够”。
-
-而是：
-
-> **如何把 Alas 主控也放到 K20 Pro 本机。**
+MFABD2 和 Alas 内部怎么安排任务，继续由它们自己负责。
 
 ---
 
-## 10. Alas 本机化已有历史先例
+# 资源约束
 
-社区曾有 ARM64 Android / Docker 运行 Alas 的方案。
+Node-01 是 6 GB RAM。
 
-也有用户在旧 Android + Snapdragon 855 一代环境中，通过类似 AidLux 的 Linux/Python 环境运行 Alas。
+不预先设计“多游戏并行”。原则只是：同一时刻不要无证据地同时常驻多个大型游戏 + 多套重运行时。
 
-概念结构：
-
-```text
-K20 Pro
-├─ 碧蓝航线 Android App
-│
-├─ Linux / Python runtime
-│   └─ Alas
-│
-└─ localhost ADB
-    └─ Alas 控制同一台手机
-```
-
-Node-01 正好是：
-
-```text
-Snapdragon 855
-Android 9
-ARM64
-Root
-```
-
-这使“本机化”值得研究。
-
-但要注意：
-
-> 这不是当前 Alas 官方的一键 Android APK 路线。
-
-当前状态是：
-
-```text
-COMMUNITY-PROVEN CONCEPT
-NODE-01 DEPLOYMENT UNVERIFIED
-```
+具体内存是否足够，由 Final Live 和后续 soak 观察，不靠猜测加限制。
 
 ---
 
-## 11. Alas 本机化的研究顺序
+# 开发工具
 
-不要直接照抄旧 Docker 镜像。
+需要时使用 ADB / scrcpy、uiautomator2、Airtest / OpenCV、GKD Inspect。
 
-应该：
-
-1. 检查当前 Alas 2026 版 Python 依赖；
-2. 检查 ARM64 wheel / native dependency；
-3. 确定 Android 9 上最干净的 Linux/Python 运行方式；
-4. 测试 localhost ADB；
-5. 测试截图速度；
-6. 测试长期进程稳定性；
-7. 最后再做开机自启动 / Supervisor 接入。
-
-候选运行方式可以研究：
-
-- AidLux 类环境；
-- Termux；
-- proot；
-- chroot；
-- Root Linux 环境；
-- ARM64 Docker 类方案。
-
-不要在没有依赖证据前提前选定。
+这些是开发/诊断工具，不是 24×7 runtime 前置依赖。
 
 ---
 
-## 12. Alas 与 Supervisor
+# 安全边界
 
-最终理想形态：
+不做反作弊绕过、Root 隐藏、Hook 反检测、伪造设备以规避封禁或绕过游戏安全机制。
 
-```text
-Supervisor
-↓
-AzurLaneAdapter
-↓
-Alas runtime (on-device)
-↓
-localhost ADB
-↓
-碧蓝航线
-```
-
-当拼多多时间到：
-
-```text
-Supervisor
-→ 请求 Alas 停在安全状态 / 暂停调度
-→ 释放前台
-→ 跑 PDD
-→ 恢复 Alas
-```
-
-不要让 Alas 和 PDD 自动化同时操作屏幕。
-
----
-
-# 通用开发工具
-
-## 13. uiautomator2
-
-适合开发 / 检查：
-
-- UI hierarchy；
-- screenshot；
-- ADB 设备控制；
-- 结构化点击。
-
-但不作为 24×7 PC 依赖。
-
----
-
-## 14. Airtest / OpenCV
-
-当游戏 UI 不暴露 Accessibility 节点时：
-
-- 模板匹配；
-- 图像识别；
-- 找色；
-- 视觉判断。
-
-只在 AutoJs6 / 上游项目能力不足时加。
-
-不要为了“可能有用”先常驻。
-
----
-
-## 15. GKD
-
-GKD 仍可用于很简单的响应式 UI 任务：
-
-```text
-出现 A
-→ 做 B
-```
-
-它的规则引擎、selector、snapshot 和 Inspect 能力都很强。
-
-但当前项目的主线需要：
-
-- 调度；
-- 状态；
-- 多任务切换；
-- 游戏；
-- 恢复；
-
-所以不把 GKD 作为总控。
-
----
-
-## 16. 游戏自动化的安全边界
-
-本项目不做：
-
-- 反作弊绕过；
-- Root 隐藏；
-- Hook 反检测；
-- 伪造设备以逃避封禁；
-- 绕过游戏安全机制。
-
-只处理：
-
-- 自己账号上的重复 UI 操作；
-- 日常；
-- 收菜；
-- 自动战斗外围调度；
-- 异常恢复。
-
-游戏本身仍可能禁止自动化。
-
-是否使用由用户自行判断游戏规则和账号风险。
+只处理用户自己设备上的重复 UI 自动化。

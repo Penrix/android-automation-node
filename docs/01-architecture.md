@@ -31,9 +31,9 @@ PDD live handler 临时抢占当前受管游戏
 K20 Pro / Node-01
 │
 ├─ AutoJs6
-│  ├─ TimedTask 09:00
-│  ├─ TimedTask 16:00
-│  ├─ TimedTask 21:00
+│  ├─ TimedTask before 09:00
+│  ├─ TimedTask before 16:00
+│  ├─ TimedTask before 21:00
 │  └─ runtime/pdd/live.js   ← Final Live evidence 后才创建
 │
 ├─ MFABD2
@@ -137,20 +137,11 @@ Owner 明确一天只能兑换一张。
 → 16:00 / 21:00 entry immediately exits
 ```
 
-### previous_managed_task
+### 当前任务身份只在本次抢占调用中临时记住
 
-PDD 完成后必须知道恢复谁。
+PDD 完成后确实要恢复刚才的游戏，但目前没有证据要求把这个事实持久化到磁盘。
 
-最终表示形式要等真实 MFABD2 / Alas runtime 确定。
-
-当前不预设它一定是：
-
-- process id；
-- package；
-- AutoJs6 engine；
-- config name；
-- adapter object。
-
+Final Live 先直接从当前实际运行的 MFABD2 / Alas 状态获取并在本次调用内保存；只有真实出现“PDD 脚本重启后仍必须自动恢复上一任务”的故障，才考虑持久化。
 ---
 
 ## 5. 当前没有 Task Lock
@@ -162,8 +153,6 @@ PDD 完成后必须知道恢复谁。
 原因：
 
 - 当前跨应用抢占入口只有 PDD；
-- PDD scheduler 本身只注册一条同路径任务/时间；
-- 安装器会去除同一路径旧任务，避免重复触发；
 - 游戏执行器各自有自己的生命周期；
 - 尚未观察到多个项目内 task 并发争抢屏幕的真实 failure。
 

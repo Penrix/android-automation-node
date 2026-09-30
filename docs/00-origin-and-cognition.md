@@ -485,3 +485,55 @@ Penrix/android-automation-node
 8. 不提前 fork；出现真实修改需求再 fork。
 9. 固定设备、固定 ROM、固定分辨率不是缺点，而是自动化确定性的来源。
 10. 文档必须保留“为什么变成这样”，避免后续重新走已经排除过的路线。
+
+
+---
+
+## 11. 后续纠正：运行边界继续收窄
+
+后续按 coding skill 和真实上游继续审查后，两处早期认知被修正：
+
+### Supervisor-first 被继续减负
+
+早期曾认为需要：
+
+```text
+Supervisor
+├─ Scheduler
+├─ Task Lock
+├─ Watchdog
+└─ Recovery
+```
+
+后续源码审计发现：
+
+- AutoJs6 自带持久 TimedTask；
+- MFABD2 自带自己的 schedule / foreground keep-alive / watchdog；
+- Alas 自带成熟任务调度。
+
+因此当前不再实现常驻自研 Supervisor。
+
+项目首版只保留真正缺失的“跨应用抢占”：
+
+```text
+PDD prepare time
+→ 让当前游戏执行器让出手机
+→ PDD
+→ 恢复原任务
+```
+
+### 断电恢复不属于当前目标
+
+Owner 明确：
+
+```text
+K20 不会来电自动开机
+断电后由 Owner 手动开机
+项目不需要解决来电自启
+```
+
+因此软件运行边界从“Owner 手动开机、Android 可用”之后开始。
+
+不做 charger-mode、bootloader/init、UPS 或无人冷启动恢复。
+
+这两处修正保留在历史中，是认知形成的一部分；当前实施以最新文档为准。

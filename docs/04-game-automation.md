@@ -98,170 +98,104 @@ NODE-01 LIVE UNVERIFIED
 
 ---
 
-# 2. Azur Lane / Alas
+# 2. Azur Lane / AzurPilot-for-Android
 
-上游：`LmeSzinc/AzurLaneAutoScript`。
+第一候选不再是原版 Alas + AidLux。
 
-Alas 已经负责游戏内部的主线、活动、委托、科研、后宅、商店、大世界、心情和任务调度。
+上游：
 
-项目不重写游戏逻辑。
+- `wess09/AzurPilot`：现代化 Alas 变体；
+- `wess09/AzurPilot-for-Android`：Android 专用宿主，基于 ALAS-AOS / MaaFwApp 路线。
 
-## 2.1 手机上的结构
+## 2.1 为什么更适合 Node-01
 
-Alas 没有 MFABD2 那种 Android native 虚拟屏宿主。
+AzurPilot-for-Android 当前源码明确：
 
-它的典型控制链是：
+- minSdk 28 = Android 9；
+- ARM64；
+- Root / Shizuku 双后端；
+- 内置 Ubuntu/PRoot runtime；
+- 内置 AzurPilot；
+- BACKGROUND 虚拟屏；
+- 虚拟屏固定横屏 1280×720；
+- 本机特权桥负责 screencap / click / swipe / shell；
+- `azurpilot_android` 控制后端不依赖 ADB / uiautomator2。
 
-```text
-Python Alas
-→ adbutils / uiautomator2 / scrcpy / ADB
-→ Android 主显示上的 Azur Lane
-```
-
-所以手机本机化要解决的是“Python controller 放在哪里”，不是重写 Alas。
-
-## 2.2 第一候选：官方 AidLux 0.92
-
-AidLux 官方 GitHub release 仍保留：
-
-```text
-v0.92
-aidlux_0.92.apk
-```
-
-这不是第三方 APK。
-
-当前 AidLux 2.x 已转向 Android 13+，不适合 Node-01 Android 9；而 Alas 自己当前源码仍保留专门的 `deploy/AidLux/0.92/requirements.txt` 和 AidLux deploy template。
-
-2026 年 Alas issue #5739 的用户反馈也与 Node-01 高度吻合：AidLux 0.9.2 + Snapdragon 855 + 低版本 Android 跑得顺，Android 10 正常，而高版本 Android 才是问题区。
-
-因此第一候选就是旧官方 0.92，而不是 Termux。
-
-## 2.3 本机 ADB
-
-历史手机运行案例和云手机日志都证明了这种拓扑：
+因此目标结构是：
 
 ```text
-Android
-├─ Azur Lane
-└─ AidLux/Linux
-   └─ Alas
-      └─ adb → 同一台 Android
+K20 Android 9 / Root
+└─ AzurPilot-for-Android
+   ├─ Root privileged bridge
+   ├─ PRoot Ubuntu + AzurPilot
+   └─ 1280×720 virtual display
+      └─ Azur Lane
 ```
 
-`127.0.0.1:5555` 是已有手机/云手机方案里常见的 serial，但不是现在就写死的 K20 事实。
+物理主屏不需要改分辨率，也不需要单独安装 AidLux。
 
-Final Live 先让 `adb devices` 告诉我们真实 serial，再填 Alas 配置。
+## 2.2 当前官方包
 
-## 2.4 分辨率
+截至 2026-09-30，滚动 Latest 已发布 ARM64 full APK：
 
-Alas 的 assets 和设备检查以 1280×720 为标准；源码会对不支持的分辨率直接 RequestHumanTakeover。
+`AzurPilot-Android-1.2.11-arm64-v8a-full.apk`
 
-真实安卓手机已有两类证据：
+SHA-256：
 
-- 真机原生 2520×1080，使用 root 分辨率工具切到 1280×720 后，主线、大世界、科研、战术学院等大部分功能能正常工作；
-- 也有手机执行 `adb shell wm size 1280x720` 后，Alas 仍读到原始分辨率的案例。
+`900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`
 
-所以 Node-01 第一方案不是改 Alas，而是让 Android 主显示在运行 Alas 时提供 1280×720 逻辑画布。
+full APK 约 889 MB，内置 Runtime；update APK 只更新 Android 宿主，不适合作为首次安装包。
 
-顺序：
+## 2.3 Root 模式
 
-```text
-记录原始 wm size
-→ root wm size 720x1280   # 竖屏系统；游戏横屏后应为 1280x720
-→ 启动 Azur Lane
-→ Alas 实际读取 [Screen_size]
-```
+项目自身使用 libsu，同时也支持 Shizuku。
 
-只有 Alas 真正读到 1280×720 才算成功。
+Node-01 已 Root，因此第一候选直接使用 Root backend，不再额外维护 Shizuku。
 
-如果 K20 上 `wm size` 不生效，再用 Scene 这类 root 分辨率工具；已有安卓真机案例证明 Scene 切到 1280×720 后 Alas 大部分功能可正常运行。
+已有 Redmi K60 root 用户成功报告，但 K20 / Android 9 尚无完整用户报告。
 
-当前不 fork Alas 做原生 K20 分辨率适配。原因：
+## 2.4 Android 9 证据
 
-- current source 明确拒绝非 1280×720；
-- SCREEN_SIZE、检测区域、大量图片/坐标都以 1280×720 为母版；
-- 官方仓库已有 1080P 适配尝试，截图可用但 UI 识别变 Unknown ui page，该需求最终标记 wontfix；
-- K20 原生超宽比例不是简单等比例 16:9，单纯 resize 会引入形变或裁切与点击坐标反变换问题。
+不是只看 README：
 
-只有 `wm size` 和 root 分辨率工具都无法在 K20 提供稳定 1280×720 时，才考虑一个限定 Node-01 的 Alas viewport fork：
+- Gradle minSdk 明确为 28；
+- README 标注 Android 9.0+；
+- 源码里已有针对 Android 9 forced-size 行为的实测注释；
+- 但当前公开机型矩阵主要是更新 Android 版本。
 
-```text
-native screenshot
-→ crop/letterbox to 16:9
-→ normalize to 1280×720 for all Alas vision
-→ inverse-transform click/swipe back to native coordinates
-```
+因此：
 
-这属于 Plan B，不是首选。
+`ANDROID 9 SOURCE-SUPPORTED ≠ K20 LIVE VERIFIED`
 
-这一点不能用 MFABD2 的 MaaFwApp 虚拟屏能力直接外推给 Alas。
+## 2.5 已知真机问题
 
-## 2.5 Start / Stop / Resume 的真实语义
+项目非常新，已经有真实 bug 报告：
 
-WebUI 的 Start/Stop 已经是上游自己的控制面：
+- 某些虚拟屏上 `mCurrentFocus` 很快变 null，导致 Android backend 误判游戏未运行并 Restart 循环；
+- Redmi K50 / Android 14 用户报告岛屿“啾咖啡”任务存在 touch down / 滑动定位问题；
+- issue 曾记录调度停止行为不理想。
 
-```text
-Start
-→ ProcessManager 创建 Alas 子进程
-→ AzurLaneAutoScript(config_name).loop()
+这些是 Final Live 要重点观察的 Reality，不提前写 workaround。
 
-Stop
-→ ProcessManager 直接 kill 子进程
-→ 记录 Manual stop
+## 2.6 原版 Alas 的位置
 
-再次 Start
-→ 用同一个 config 重新创建进程
-→ scheduler 重新读 Scheduler.Enable / Scheduler.NextRun
-→ 重新选择 pending / waiting task
-```
+原版 Alas + 官方 AidLux 0.92 现在降为 fallback。
 
-这说明不需要我们先造一套外部 pause/resume API。
+它仍有价值，因为：
 
-但 Stop 是硬停进程，不是优雅地等当前关卡到安全点。
+- SD855 + 低 Android 有历史成功案例；
+- 原版 Alas 逻辑更成熟；
+- 当 Android 专用宿主出现明确兼容 blocker 时，可以回退。
 
-所以真机必须验证：
+但它需要额外处理 Linux runtime、本机 ADB、1280×720 主显示和老 Python ARM64 依赖，因此不再是首选。
 
-```text
-正在挂机
-→ Stop
-→ Start
-→ Alas 能否从当前游戏页面重新找回自己的任务轨道
-```
+## 2.7 其他 fork 的结论
 
-## 2.6 Alas 自己已经拥有调度和恢复逻辑
-
-Alas scheduler 会持久化每个任务的 Enable / NextRun，按优先级选择任务，并能处理游戏未运行、卡死、游戏 bug、服务器维护等情况。
-
-不要在外面复制第二套游戏 scheduler。
-
-## 2.7 当前依赖风险
-
-当前 Alas 仍是 Python 3.7 时代依赖栈，AidLux 专用 requirements 包含旧版：
-
-- adbutils 0.11.0；
-- uiautomator2 2.16.17；
-- mxnet 1.6.0；
-- av 10.0.0；
-- scipy 1.7.1；
-- cnocr 1.2.2 等。
-
-真实风险目前有两个证据最强：
-
-- ARM64 mxnet；
-- PyAV / FFmpeg native build。
-
-上游 ARM64 Docker 自己也专门替换过 mxnet；Termux 用户也真实卡过 mxnet。
-
-因此不要混用网上新版 requirements；先严格走 Alas 自带 AidLux 0.92 requirements，真报错再处理。
-
-## 2.8 当前状态
-
-```text
-PHONE-LOCAL TOPOLOGY: HISTORICALLY / COMMUNITY PROVEN
-AIDLUX 0.92 SOURCE PATH: VERIFIED
-CURRENT ALAS ON NODE-01: LIVE UNVERIFIED
-```
+- `LittleMio/AzurLaneAutoScript-docker-arm64`：ARM64 依赖配方有价值，但 Docker 太重，不适合先上 K20。
+- `miyouzi/azurlaneautoscript-arm64`：偏 ARM Linux/NAS，不是 Android 手机方案。
+- `M-AzurLaneAutoScript`：玩法增强，不解决手机 ARM64 部署。
+- `AzurLaneAutoScript-Headless`：方向先进，但 root ARM64 真机仍属研究级，完整长期 ALAS 尚未验证。
+- `Shinarin/ALAS-AOS`：也是 Android APK + 1280×720 虚拟屏，路线成立；当前主要公开全链路验证在新 Android / Shizuku 方案，Node-01 有 Root 时 AzurPilot-for-Android 更直接。
 
 ---
 
@@ -274,10 +208,11 @@ MFABD2
 → 后台虚拟屏
 → 物理屏可继续使用
 
-Alas
-→ Linux/Python controller
-→ ADB 控主 Android 显示
-→ 没有同等级的后台虚拟屏机制
+AzurPilot-for-Android
+→ Android native host
+→ embedded PRoot/AzurPilot
+→ 1280×720 background virtual display
+→ physical screen remains free
 ```
 
 因此以后任何跨应用处理都必须分别设计，不能再把两个游戏抽象成同一种“暂停/恢复接口”。

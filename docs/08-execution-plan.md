@@ -1,312 +1,136 @@
-# 08｜执行计划 rev 2：准备完成后再集中上机
+# 08｜当前执行计划：两个游戏优先，PDD 后置
 
-> 2026-09-30 修订：上一版把真机基线放在第一步。Owner 已明确要求“先做好准备，上机测试是最后一步”，因此当前计划改为 **offline/source/code preparation first, physical Node-01 live gate last**。旧思路及修正原因保存在 `docs/09-preflight-readiness.md`。
+Owner 当前优先级：
 
-## 总目标
+> 先把 MFABD2 和 Alas 两条手机本机运行链路弄明白；PDD 需要真机页面测试，暂时不继续。
 
-把 Redmi K20 Pro 变成一个脱离 Windows/Codex 也能长期自主运行的 Android Automation Node。
-
-运行边界由 Owner 明确为：
+## 运行边界
 
 ```text
-断电/关机
+断电 / 关机
 → Owner 手动开机
-→ Android 进入可用状态
-→ 本项目开始负责长期自动化
+→ Android 可用
+→ 游戏自动化开始工作
 ```
 
 不做来电自启、charger-mode、bootloader/init 或无人冷启动恢复。
 
-最终闭环仍然不变：
-
-```text
-游戏运行
-→ PDD 高优先级时间窗
-→ 停止/让出当前挂机
-→ 执行抢券
-→ 验证结果
-→ 恢复原挂机
-```
-
-当前变化只是执行顺序：
-
-```text
-先把源码、安装包、代码、采证工具、验收合同全部准备好
-→ 最后才连接 K20 Pro 集中验证
-```
-
 ---
 
-# Phase P0｜Source Reality Freeze
+# Track A｜Brown Dust 2 / MFABD2
 
-目标：不上机，先把当前上游真实能力和版本边界查清。
-
-## P0.1 AutoJs6
-
-已确认现成能力：
-
-- persistent storage；
-- timers；
-- child script execution / single-engine force stop；
-- app launch；
-- Root shell；
-- RootAutomator；
-- screenshot；
-- template matching；
-- Accessibility；
-- device / foreground metadata。
-
-结论：
-
-> 不造自定义 runtime / storage / scheduler framework。
-
-准备输出：
-
-- 安装包 + SHA256；
-- Node-01 collector；
-- PDD screenshot/A11y collector；
-- 当前实际需要的 AutoJs6 API 已由上游源码确认。
-
-## P0.2 MFABD2
-
-已确认：
+## Offline 已确认
 
 - 官方 Android ARM64 APK；
 - Android 9+；
 - Root / Shizuku；
 - AndroidNativeController；
-- 正式 package 与 Brown Dust 2 package；
-- 真机完整任务仍属于上游自己标注的未验收区。
+- 当前固定 MaaFwApp commit 已支持 BACKGROUND 虚拟屏；
+- BACKGROUND 是默认 run mode；
+- 默认虚拟屏 P720；
+- Root backend 使用 libsu 拉起特权进程；
+- MaaFwApp 自己已有运行配置、定时、前台服务、watchdog。
 
-结论：
-
-> 不 fork、不预写统一 Adapter；先准备官方 APK 最小验收。
-
-## P0.3 Alas
-
-已确认：
-
-- 当前 requirements；
-- AidLux 0.92 专门依赖文件仍在仓库；
-- ARM64 Docker 路线；
-- Python 3.7.10 / mxnet ARM64 特殊处理。
-
-准备继续：
-
-- 依赖可安装性表；
-- Android 9 runtime 候选对比；
-- 只在 source evidence 足够时选第一候选。
-
----
-
-# Phase P1｜跨应用抢占合同准备
-
-AutoJs6 TimedTask 已成为 PDD 时间调度的唯一 owner；MFABD2 / Alas 保留自己的内部调度。
-
-项目首版只准备跨应用抢占所需的最小事实：
-
-1. 当天是否已成功兑换；
-2. 抢占前是谁在运行；
-3. 对当前执行器使用真实验证后的最小停止动作；
-4. PDD 完成后使用真实验证后的最小恢复入口。
-
-当前已经准备：
-
-- AutoJs6 TimedTask 的 source-proven 调度方式；
-- MFABD2 launch / force-stop 的 source-proven 直接调用；
-- claimed_date 这个唯一需要持久化的业务状态。
-
-当前故意不写：
-
-- `runtime/pdd/live.js`；
-- MFABD2 resume；
-- Alas stop/resume；
-- 任何尚无真机证据要求的额外编排层。
-
-这些必须由 Final Live evidence 决定。
-
----
-
-# Phase P2｜PDD Final-Live Harness 准备
-
-在不上机阶段完成：
-
-- 页面证据采集步骤；
-- Accessibility tree 采集方式；
-- screenshot 采集；
-- 输入 latency benchmark 脚本设计；
-- detection benchmark 记录格式；
-- refresh → target visible → tap 的时间线日志；
-- success / already claimed / sold out receipt 模板。
-
-当前检测策略只是待验证假设：
+因此首选运行结构是：
 
 ```text
-Accessibility
-→ local template/color
-→ relative tap
-→ OCR fallback
+K20 Android
+├─ 物理屏：可正常使用
+└─ 720P virtual display
+   └─ Brown Dust 2
+      ↑
+   MFABD2 / MaaFwApp / MaaFramework
 ```
 
-只有最终 live evidence 才能选择主链路。
+## Final Live 最小验收
+
+1. 安装 MFABD2 官方 Android APK；
+2. 选择 Root backend；
+3. 保持 BACKGROUND + P720；
+4. 启动一个最小安全任务；
+5. 确认 Brown Dust 2 被放进虚拟屏；
+6. 确认物理屏还能正常操作别的 App；
+7. 再逐步跑常用日常；
+8. 观察截图偏暗、颜色匹配、点击精度和长期稳定性。
+
+如果这条通过，不增加任何外部游戏调度或停止机制。
 
 ---
 
-# Phase P3｜MFABD2 接入准备
+# Track B｜Azur Lane / Alas
 
-不上机阶段只做：
+## Offline 已确认
 
-- 锁定待测正式 APK；
-- 校验 SHA256；
-- 阅读 Android 上游行为；
-- 明确最低验收动作；
-- 明确如何观察“停止后是否释放控制权”。
+- current Alas 仍保留专门 AidLux 0.92 deploy template / requirements；
+- AidLux 官方 GitHub release 仍提供 `aidlux_0.92.apk`；
+- Snapdragon 855 + 低 Android 的 AidLux/Alas 历史用户路径真实存在；
+- 手机上本机 WebUI `127.0.0.1:22267` 的历史运行案例真实存在；
+- 手机 Docker / 云手机里本机/局域网 ADB 的 Alas 路径真实存在；
+- Alas 自己有完整 scheduler；
+- WebUI Start/Stop 直接控制每个配置的 Alas 子进程；
+- Start 后 scheduler 重新读取同一 config 的 Enable / NextRun；
+- Alas 画面标准是 1280×720；
+- ARM64 mxnet 与 PyAV 是有证据的依赖风险。
 
-不上机阶段不增加额外控制抽象。
-
-最终上机先观察它真实可控边界，然后只补实际缺的 integration shim。
-
----
-
-# Phase P4｜Alas 本机化准备
-
-这是技术风险最高的一条，但源码审计可以提前完成。
-
-不上机阶段：
-
-1. 列出当前 Python/native dependencies；
-2. 标记 ARM64 已有 wheel / 特殊 wheel / native library；
-3. 对 AidLux / Termux / proot / chroot / Root Linux / container 做证据比较；
-4. 选择第一候选和一个明确 fallback 候选；
-5. 写安装步骤草案；
-6. 准备 localhost ADB proof 步骤。
-
-不要同时实现六条 runtime 路线。
-
----
-
-# Phase P5｜Static / Code Verification Gate
-
-上机前要求：
+## 第一候选拓扑
 
 ```text
-[x] 当前 upstream revision / package 已记录
-[x] 保留的准备脚本语法检查通过
-[x] 跨应用抢占边界已收窄；没有额外常驻调度层
-[x] 通用 Adapter / retry / watchdog 未进入生产
-[x] PDD / MFABD2 / Alas 的 Final Live 问题已经明确
-[x] 未真机验证项保持 LIVE UNVERIFIED
+K20 Android 9
+├─ Azur Lane
+└─ official AidLux 0.92
+   └─ current Alas
+      └─ ADB → same Android device
 ```
+
+## Final Live 最小验收
+
+1. 从 AidLux 官方 GitHub release 安装 0.92；
+2. 初始化 AidLux；
+3. 先运行只读 `tools/alas/aidlux-preflight.sh`；
+4. 确认 `/usr/bin/python`、`git`、`adb`、ARM64 与 pip；
+5. clone current Alas；
+6. 使用上游自己的 AidLux 0.92 deploy template / requirements；
+7. 真报错时只处理实际 blocker；
+8. 先让 ADB 看见同一台 K20，不预设 serial；
+9. 解决/确认 1280×720；
+10. 启动 `python gui.py`；
+11. 确认手机本地 WebUI；
+12. 让 Alas 取得一帧并识别主页；
+13. 再跑一个最小安全任务；
+14. 最后验证 WebUI Stop → Start 后 scheduler 是否能回到任务轨道。
+
+## 当前不做
+
+- 不先改 Alas；
+- 不先 fork；
+- 不混用网上新版 requirements；
+- 不同时铺 Termux / proot / chroot / Docker 多套方案；
+- 不为了未来 PDD 先写 pause/resume wrapper。
 
 ---
 
-# FINAL LIVE GATE｜最后才上 K20 Pro
+# Track C｜PDD
 
-到这里之前不碰 Node-01。
+暂缓。
 
-最后集中做：
-
-## L0 基线
-
-运行：
-
-- `tools/node01/collect-baseline.js`
-
-确认：
-
-- Android/API；
-- AutoJs6；
-- root；
-- Accessibility；
-- screenshot；
-- foreground metadata。
-
-## L1 PDD
-
-采真实页面：
-
-- UI tree；
-- screenshot；
-- 动态模块位置；
-- 目标券状态；
-- click/screenshot/template/OCR latency；
-- refresh latency。
-
-根据结果现场选择主检测路径，而不是事先硬编码。
-
-## L2 PDD cross-app preemption
-
-证明：
-
-```text
-受控挂机任务
-→ PDD 抢占
-→ PDD 完成/超时
-→ 恢复挂机
-```
-
-## L3 MFABD2
-
-安装官方 APK，跑最小任务，观察真实暂停/退出/恢复边界。
-
-然后才决定是否需要 integration shim / fork。
-
-## L4 Alas
-
-只跑第一候选 runtime 的最小 proof：
-
-```text
-Alas 本机进程
-→ localhost ADB
-→ 同机截图/识别
-→ 一个无风险动作
-```
-
-失败时根据实际 blocker 再进入 fallback 候选，而不是预先同时铺开。
+已有认知和采证工具保留，但在两个游戏链路搞清并最终上机后再继续。
 
 ---
 
-# 24×7 稳定化
-
-只有 FINAL LIVE GATE 后开始。
-
-Watchdog / Recovery 按真实出现的问题增量加入：
+# 当前 Evidence
 
 ```text
-observed failure
-→ root cause
-→ smallest recovery
-→ verify
+MFABD2 Android architecture:
+SOURCE / PACKAGE VERIFIED
+
+MFABD2 on K20:
+LIVE UNVERIFIED
+
+Alas phone-local architecture:
+SOURCE + HISTORIC/COMMUNITY GROUNDED
+
+Alas on K20:
+LIVE UNVERIFIED
 ```
 
-不先写“万能自愈系统”。
-
----
-
-# 当前状态
-
-| Area | 当前状态 | 上机前剩余 |
-|---|---|---|
-| Coding standards | READY | 无 |
-| Upstream registry | READY | 最终 live 前刷新一次 |
-| AutoJs6 source capability | SOURCE VERIFIED | 最终真机 timing 验收 |
-| Node-01 collector | CODE PREPARED | 最终上机运行 |
-| MFABD2 package/control boundary | PACKAGE/SOURCE VERIFIED | 最终 stop/release/resume 观察 |
-| PDD | SCHEDULE/HARNESS PREPARED | 最终真实页面采样后写 live handler |
-| Alas | SOURCE/DEPENDENCY AUDIT PREPARED | 最终 AidLux preflight |
-| Physical K20 | LIVE UNVERIFIED | **最后阶段统一验证** |
-
-## 当前下一步
-
-不是上机。
-
-当前主要 offline 准备已经完成。
-
-最后只做：
-
-```text
-Final Live 前刷新一次 upstream
-→ 开始 K20 Pro 实机验收
-```
-
-然后进入 Owner 指定的最后一步：FINAL LIVE GATE。
+下一步离线工作只剩：保持两条游戏路线的版本/依赖信息对齐，不再增加自制框架。

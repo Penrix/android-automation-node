@@ -42,3 +42,23 @@ Freshest is not automatically best. Live evidence must keep its exact upstream r
 | aidlearning/AidLearning-FrameWork | official release `v0.92` | Official asset `aidlux_0.92.apk` still exists; use this as first K20 Alas runtime candidate rather than an untrusted third-party APK |
 | linwei5d/AzurLaneAutoScript-Docker-Arm64 | repo pushed through 2024-05-19 | Historical phone-Docker + host-network + local ADB architecture proof only; do not use stale image as production source |
 | LittleMio/AzurLaneAutoScript-docker-arm64 | repo pushed through 2026-06-02 | Current ARM64 Docker packaging evidence; targets generic ARM64 Linux, not automatically Android/AidLux |
+
+
+## Azur Lane Android alternatives reviewed 2026-09-30
+
+| Source | Reviewed state | Conclusion |
+|---|---|---|
+| wess09/AzurPilot | master `4a885426772047dfac83474209dbd6fb16bb8fc4`, dev also active | Modern Alas descendant: Python 3.14/uv/RapidOCR/NCNN, active Android adapter work. Main repo alone is not the preferred K20 package because the Android host is split out. |
+| wess09/AzurPilot-for-Android | main `6c89ee73fc5e704ff2940db9f8720c4874166fba` | **Primary K20 Azur Lane candidate.** Android 9+ (minSdk 28), ARM64, Root/Shizuku, embedded PRoot/Ubuntu + AzurPilot, 1280x720 background virtual display. |
+| AzurPilot-for-Android rolling Latest | published ARM64 full APK through `1.2.11` when reviewed | First-install artifact: `AzurPilot-Android-1.2.11-arm64-v8a-full.apk`, SHA-256 `900a2b6e3ce7709bca43383cca72f4c4cd227d9fc4263ba61fc5a00876432872`. Node-01 live acceptance pending. |
+| Shinarin/ALAS-AOS | Android ARM64 APK route, releases v0.1.x reviewed | Valid Android virtual-display proof based on original ALAS + MaaFwApp. Useful fallback/reference; public full-chain verification is mainly newer Android/Shizuku. |
+| helenananaa/AzurLaneAutoScript-Headless | active 2026 research project | Research/watchlist only. Root ARM64 physical-phone graphics work exists, but full game + ALAS + long-running phone acceptance is not mature enough for primary Node-01 runtime. |
+| LittleMio/AzurLaneAutoScript-docker-arm64 | current ARM64 Docker packaging | Useful mxnet/Python ARM64 recipe, but heavier than a native Android host and not first choice on K20. |
+| W1NDes/M-AzurLaneAutoScript | gameplay-modified ALAS fork | Does not materially improve Android/ARM64 deployment; old dependency stack remains. |
+
+Known AzurPilot Android realities at review time:
+
+- no K20 / Android 9 full-chain user report found yet;
+- successful reports include newer Redmi/iQOO devices and a Redmi Note 10 Pro on MIUI 12.5;
+- real Android virtual-display bugs have already been reported (foreground detection / some touch & swipe cases);
+- therefore Android 9 support is source/package support, not Node-01 live proof.

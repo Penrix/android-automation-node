@@ -6,7 +6,7 @@
 
 ```text
 Brown Dust 2 → MFABD2 Android
-Azur Lane     → AzurPilot-for-Android
+Azur Lane     → ALAS-AOS / AzurPilot-for-Android live comparison
 ```
 
 PDD 暂时后置；它需要真实页面和时序，等游戏链路稳定后再上机处理。
@@ -35,36 +35,41 @@ Node-01 已 Root，所以第一候选直接选择 MaaFwApp 的 Root backend，�
 
 ### Azur Lane
 
-当前第一候选改为：
+当前不是只押一个 Android fork，而是两个真正可落地的 APK 候选：
 
 ```text
-wess09/AzurPilot-for-Android
-→ 官方 Android ARM64 full APK
-→ Root backend
-→ 内置 Ubuntu/PRoot + AzurPilot runtime
-→ 1280×720 后台虚拟屏
-→ Azur Lane
+A. Shinarin/ALAS-AOS
+   → Android 9+ / ARM64
+   → Shizuku 特权进程
+   → 内置 Ubuntu/PRoot + original ALAS
+   → 1280×720 后台虚拟屏
+
+B. wess09/AzurPilot-for-Android
+   → Android 9+ / ARM64
+   → Root / Shizuku
+   → 内置 Ubuntu/PRoot + AzurPilot
+   → 1280×720 后台虚拟屏
 ```
 
-理由：
+Reality Reconnaissance 后，第一轮真机 probe 顺序改为 **ALAS-AOS → AzurPilot-for-Android**。
 
-- 项目 minSdk = 28，正好是 Android 9；
-- 官方支持 ARM64；
-- 同时实现 Shizuku / Root，Node-01 直接用 Root；
-- 内置 Linux/Python runtime，不再需要单独安装 AidLux / Termux；
-- 专门的 `azurpilot_android` 后端不走 ADB/uiautomator2，而是通过本机特权桥截图/触控虚拟屏；
-- 虚拟屏固定横屏 1280×720，因此不需要先改 K20 主显示分辨率；
-- 已发布可安装的 ARM64 full APK。
+原因不是 ALAS-AOS 已被证明更稳定，而是：
 
-原版 Alas + 官方 AidLux 0.92 保留为 fallback，不再是第一路线。
+- 两者都明确支持 Android 9 / ARM64，且都有可安装 APK；
+- ALAS-AOS 在虚拟屏前台检测失败时已有 `pidof` 回退；
+- ALAS-AOS 已对手机 GPU 渲染造成的 ALAS 模板阈值漂移做过真机校准；
+- AzurPilot-for-Android 当前锁定的 AzurPilot commit `4ac2ae...` 仍保留已被真机 issue #1089 证明会导致 Restart 循环的 `mCurrentFocus` 判定；
+- AzurPilot-for-Android 另有 Redmi K50 的 touch/swipe 失败现场报告。
 
-这个 Android 项目很新，K20/Android 9 尚无完整 live evidence，因此仍然必须真机验收。
+Node-01 已 Root。ALAS-AOS 仍需 Shizuku，但 Root 设备启动 Shizuku 不需要 PC 常驻；这是额外组件，不是当前 blocker。
+
+如果 ALAS-AOS 在 K20/MIUI 10 上出现明确 blocker，再试 AzurPilot-for-Android；如果两个 Android 宿主都失败，才回退 original Alas + official AidLux 0.92。
 
 ## 上游各自拥有自己的调度
 
 ```text
 MFABD2 → 自己的运行配置 / 定时 / 前台服务 / 后台虚拟屏
-AzurPilot-for-Android → 内置 AzurPilot scheduler + Android host runtime
+ALAS-AOS / AzurPilot-for-Android → 各自内置 ALAS/AzurPilot scheduler + Android host runtime
 ```
 
 本项目不重写这两套调度。
@@ -86,10 +91,10 @@ AzurPilot-for-Android → 内置 AzurPilot scheduler + Android host runtime
 - 物理屏在游戏后台运行期间是否真的可自由使用；
 - 完整日常、截图颜色和点击精度是否稳定。
 
-### AzurPilot-for-Android
+### Azur Lane Android APK candidates
 
-- 当前 ARM64 full APK 能否在 MIUI 10 / Android 9 正常安装和初始化 Runtime；
-- Root backend 能否稳定拉起特权桥；
+- ALAS-AOS 与 AzurPilot-for-Android 的 ARM64 APK 能否在 MIUI 10 / Android 9 正常安装和初始化 Runtime；
+- ALAS-AOS 的 Shizuku backend 与 AzurPilot-for-Android 的 Root backend 哪条在 Node-01 更稳定；
 - 1280×720 BACKGROUND 虚拟屏能否稳定运行碧蓝航线；
 - 截图颜色、点击/滑动在 K20 上是否准确；
 - 当前已知 Android 虚拟屏前台判断/触控问题是否会在 K20 复现；

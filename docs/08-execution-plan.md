@@ -92,7 +92,7 @@ K20 Android 9
 6. 使用上游自己的 AidLux 0.92 deploy template / requirements；
 7. 真报错时只处理实际 blocker；
 8. 先让 ADB 看见同一台 K20，不预设 serial；
-9. 解决/确认 1280×720；
+9. 先尝试 root `wm size 1280x720`，以 Alas 实际 `[Screen_size]` 为准；若 K20 不生效，再研究 root 分辨率工具；
 10. 启动 `python gui.py`；
 11. 确认手机本地 WebUI；
 12. 让 Alas 取得一帧并识别主页；

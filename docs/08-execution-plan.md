@@ -123,9 +123,7 @@ AutoJs6 TimedTask 已成为 PDD 时间调度的唯一 owner；MFABD2 / Alas 保�
 - `runtime/pdd/live.js`；
 - MFABD2 resume；
 - Alas stop/resume；
-- 通用 Adapter；
-- Task Lock；
-- 通用 Watchdog。
+- 任何尚无真机证据要求的额外编排层。
 
 这些必须由 Final Live evidence 决定。
 
@@ -166,7 +164,7 @@ Accessibility
 - 明确最低验收动作；
 - 明确如何观察“停止后是否释放控制权”。
 
-不上机阶段**不写统一 BrownDust2Adapter**。
+不上机阶段不增加额外控制抽象。
 
 最终上机先观察它真实可控边界，然后只补实际缺的 integration shim。
 
@@ -196,7 +194,7 @@ Accessibility
 ```text
 [x] 当前 upstream revision / package 已记录
 [x] 保留的准备脚本语法检查通过
-[x] 自制 scheduler / Supervisor 已删除；跨应用抢占边界已收窄
+[x] 跨应用抢占边界已收窄；没有额外常驻调度层
 [x] 通用 Adapter / retry / watchdog 未进入生产
 [x] PDD / MFABD2 / Alas 的 Final Live 问题已经明确
 [x] 未真机验证项保持 LIVE UNVERIFIED

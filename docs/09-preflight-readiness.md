@@ -1,3 +1,5 @@
+> **REFERENCE ONLY — not default authority.** Current behavior is governed by `START-HERE.md`, `docs/01-architecture.md`, `docs/08-execution-plan.md`, and live evidence. This file preserves preparation/research details and may contain superseded intermediate wording.
+
 # 09｜准备阶段自检与最终上机 Gate
 
 ## 结论

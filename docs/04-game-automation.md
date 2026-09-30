@@ -157,7 +157,22 @@ Final Live 先让 `adb devices` 告诉我们真实 serial，再填 Alas 配置�
 
 Alas 的 assets 和设备检查以 1280×720 为标准；源码会对不支持的分辨率直接 RequestHumanTakeover。
 
-因此真机本机化除了 ADB 之外，还有一个明确问题：如何让 Alas 看到稳定的 1280×720 游戏画面。
+真实安卓手机已有两类证据：
+
+- 真机原生 2520×1080，使用 root 分辨率工具切到 1280×720 后，主线、大世界、科研、战术学院等大部分功能能正常工作；
+- 也有手机执行 `adb shell wm size 1280x720` 后，Alas 仍读到原始分辨率的案例。
+
+所以 Node-01 最小策略不是先装额外工具，而是：
+
+```text
+root wm size 1280x720
+→ 启动 Azur Lane
+→ Alas 实际读取 [Screen_size]
+```
+
+只有 Alas 真正读到 1280×720 才算成功。
+
+如果 K20 上 `wm size` 不生效，再研究 Scene 这类 root 分辨率切换方式。
 
 这一点不能用 MFABD2 的 MaaFwApp 虚拟屏能力直接外推给 Alas。
 

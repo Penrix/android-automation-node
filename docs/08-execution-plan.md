@@ -65,7 +65,7 @@
 - 安装包 + SHA256；
 - Node-01 collector；
 - PDD screenshot/A11y collector；
-- Supervisor 首期允许使用的 API 清单。
+- 当前实际需要的 AutoJs6 API 已由上游源码确认。
 
 ## P0.2 MFABD2
 
@@ -194,15 +194,12 @@ Accessibility
 上机前要求：
 
 ```text
-[ ] 当前 upstream revision 已锁
-[ ] 安装包及 SHA256 已锁
+[x] 当前 upstream revision / package 已记录
 [x] 保留的准备脚本语法检查通过
-[x] 自制 scheduler / Supervisor 已经 Complexity Gate 删除；跨应用抢占合同已准备
-[ ] 不存在提前引入的通用 Adapter / retry / watchdog fantasy
-[ ] PDD live receipt 模板齐全
-[ ] MFABD2 live checklist 齐全
-[ ] Alas 第一候选 runtime 有 source-based 理由
-[ ] 所有未真机验证项明确标 LIVE UNVERIFIED
+[x] 自制 scheduler / Supervisor 已删除；跨应用抢占边界已收窄
+[x] 通用 Adapter / retry / watchdog 未进入生产
+[x] PDD / MFABD2 / Alas 的 Final Live 问题已经明确
+[x] 未真机验证项保持 LIVE UNVERIFIED
 ```
 
 ---
@@ -241,7 +238,7 @@ Accessibility
 
 根据结果现场选择主检测路径，而不是事先硬编码。
 
-## L2 Supervisor + PDD
+## L2 PDD cross-app preemption
 
 证明：
 
@@ -312,9 +309,8 @@ observed failure
 最后只做：
 
 ```text
-文档状态对齐
-→ Complexity Gate removal pass
-→ upstream 在 Final Live 前刷新一次
+Final Live 前刷新一次 upstream
+→ 开始 K20 Pro 实机验收
 ```
 
 然后进入 Owner 指定的最后一步：FINAL LIVE GATE。

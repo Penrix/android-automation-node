@@ -162,17 +162,38 @@ Alas 的 assets 和设备检查以 1280×720 为标准；源码会对不支持�
 - 真机原生 2520×1080，使用 root 分辨率工具切到 1280×720 后，主线、大世界、科研、战术学院等大部分功能能正常工作；
 - 也有手机执行 `adb shell wm size 1280x720` 后，Alas 仍读到原始分辨率的案例。
 
-所以 Node-01 最小策略不是先装额外工具，而是：
+所以 Node-01 第一方案不是改 Alas，而是让 Android 主显示在运行 Alas 时提供 1280×720 逻辑画布。
+
+顺序：
 
 ```text
-root wm size 1280x720
+记录原始 wm size
+→ root wm size 720x1280   # 竖屏系统；游戏横屏后应为 1280x720
 → 启动 Azur Lane
 → Alas 实际读取 [Screen_size]
 ```
 
 只有 Alas 真正读到 1280×720 才算成功。
 
-如果 K20 上 `wm size` 不生效，再研究 Scene 这类 root 分辨率切换方式。
+如果 K20 上 `wm size` 不生效，再用 Scene 这类 root 分辨率工具；已有安卓真机案例证明 Scene 切到 1280×720 后 Alas 大部分功能可正常运行。
+
+当前不 fork Alas 做原生 K20 分辨率适配。原因：
+
+- current source 明确拒绝非 1280×720；
+- SCREEN_SIZE、检测区域、大量图片/坐标都以 1280×720 为母版；
+- 官方仓库已有 1080P 适配尝试，截图可用但 UI 识别变 Unknown ui page，该需求最终标记 wontfix；
+- K20 原生超宽比例不是简单等比例 16:9，单纯 resize 会引入形变或裁切与点击坐标反变换问题。
+
+只有 `wm size` 和 root 分辨率工具都无法在 K20 提供稳定 1280×720 时，才考虑一个限定 Node-01 的 Alas viewport fork：
+
+```text
+native screenshot
+→ crop/letterbox to 16:9
+→ normalize to 1280×720 for all Alas vision
+→ inverse-transform click/swipe back to native coordinates
+```
+
+这属于 Plan B，不是首选。
 
 这一点不能用 MFABD2 的 MaaFwApp 虚拟屏能力直接外推给 Alas。
 

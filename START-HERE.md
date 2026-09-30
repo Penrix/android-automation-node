@@ -33,12 +33,15 @@ Research constrains implementation. It does not replace K20 physical-device veri
 
 Read `intent-contract` and `docs/07-coding-standards.md`, then only the smallest relevant product docs:
 
-- Supervisor/task switching -> `docs/01-architecture.md`
+- Cross-app preemption / current architecture -> `docs/01-architecture.md`
 - Node-01 -> `docs/02-k20pro-baseline.md`
 - PDD -> `docs/03-pdd-coupon.md`
-- Games -> `docs/04-game-automation.md`
+- Games / MFABD2 / Alas -> `docs/04-game-automation.md`
 - Fork/upstreams -> `docs/05-upstream-strategy.md`
-- Tool research -> `docs/06-tooling-research-notes.md`
+- Current execution order -> `docs/08-execution-plan.md`
+- Real-world deployment notes -> `docs/16-community-reality-playbook.md`
+
+Do not load `docs/09-15` by default. They are preparation/review artifacts from earlier passes and may contain superseded intermediate wording.
 
 ## B. Existing Issue / plan / task contract / old handoff
 
@@ -48,7 +51,7 @@ Use `contract-reality-check`. Preserve owner-visible goals and explicit boundari
 
 Before adding retry, fallback, cooldown, wrapper, adapter, interface, compatibility path, cache, second state owner, lifecycle state, generalized extension point, or fake integration, use `complexity-gate`.
 
-Project rule: Supervisor already owns cross-task orchestration; upstream executors already own game-specific behavior. New layers must prove a distinct concern.
+Project rule: upstream executors own their own game scheduling/lifecycle. This project currently owns only the PDD time trigger and the temporary cross-app preemption needed around it. New layers must prove a distinct concern.
 
 ## D. Engineering execution / debugging
 
@@ -58,7 +61,7 @@ Use Superpowers when useful for debugging, TDD, planning, worktrees, verificatio
 
 Use `reality-verification`.
 
-Generic Android behavior may use an emulator. Node-01-specific behavior requires the rooted K20 Pro when it depends on MIUI, root, Accessibility, input latency, screenshot/OCR, app timing, cross-app switching, watchdog recovery, network, or power.
+Generic Android behavior may use an emulator. Node-01-specific behavior requires the rooted K20 Pro when it depends on MIUI, root, Accessibility, input latency, screenshot/OCR, app timing, cross-app switching, network, or long-running behavior. Manual power-on is an accepted boundary; power-loss auto-boot is out of scope.
 
 ## F. Handoff
 
@@ -67,9 +70,10 @@ Before reporting a non-trivial task as done, use `owner-handoff`.
 ## Project invariants
 
 1. Node-01 keeps running when Windows/Codex are gone.
-2. Supervisor owns task arbitration.
-3. Mature upstream executors are reused before reimplemented.
-4. Fork only after a real source-level modification need is established.
-5. Long-term recoverability matters more than a short demo.
-6. Physical-device evidence outranks confidence for physical-device claims.
-7. No anti-cheat bypass or detection-evasion machinery.
+2. Manual power-on is accepted; unattended cold boot is out of scope.
+3. AutoJs6 owns PDD timing; MFABD2/Alas own their own internal game schedules.
+4. This project only adds the minimum cross-app preemption required by PDD.
+5. Mature upstream executors are reused before reimplemented.
+6. Fork only after a real source-level modification need is established.
+7. Physical-device evidence outranks confidence for physical-device claims.
+8. No anti-cheat bypass or detection-evasion machinery.

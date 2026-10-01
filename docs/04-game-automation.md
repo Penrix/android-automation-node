@@ -1,6 +1,6 @@
 # 04｜两个游戏的当前 Reality
 
-本页只记录目前已经从上游源码、官方 issue 和真实用户运行案例确认的东西。
+本页记录上游源码、官方 issue、用户运行案例及 Node-01 真机验收；源码支持不等于本机通过。
 
 # 1. Brown Dust 2 / MFABD2
 
@@ -93,8 +93,11 @@ MFABD2 自己的 Android 文档仍明确把这些留给真机验收：
 
 ```text
 ARCHITECTURE / PACKAGE / SOURCE VERIFIED
-NODE-01 LIVE UNVERIFIED
+PARTIAL LIVE VERIFIED — 安装/启动/Root 授权通过，最小闭环未通过
 ```
+
+
+2026-09-30 Node-01 实测：复用 v4.5.0 已校验 APK 安装成功；此前 MIUI 安装失败的具体根因未证实，检查时 USB 安装/安全调试已经开启。Root 后端启动最小配置报 `PI root not readable: /storage/emulated/0/Android/data/io.github.sunyink.mfabd2/files/pi`，重载服务后仍失败。目录存在且普通 shell/root 可读，但 root_service 实际 UID 2000，其挂载命名空间中目录归组 everybody(9997)，进程组不含 9997；这是权限/命名空间不匹配的线索，尚非已修复根因。未创建 MFABD2 VD，未完成游戏任务。2026-10-01 Owner 报告已安装游戏且遇到 Root 检测，要求优先碧蓝；不实施隐藏 Root 或绕过游戏检测。
 
 ---
 
@@ -139,8 +142,13 @@ Fallback：original Alas + official AidLux 0.92
 
 ```text
 CODE / PACKAGE VERIFIED
-K20 / MIUI 10 LIVE UNVERIFIED
+PARTIAL LIVE VERIFIED — 安装/运行环境/桥接/1280×720 VD 通过；任务被兼容性错误阻塞
 ```
+
+
+2026-09-30 至 2026-10-01 Node-01 证据：官方 Shizuku 13.6.0 以 root 启动时，创建 VD 报 `SecurityException: packageName must match the calling uid`；改用标准 USB ADB shell 启动 Shizuku 后，VD 创建成功（display 1，1280×720，owner com.android.shell/UID 2000）。物理屏仍 1080×2340 / density 440。服务退出后需要恢复；不能把一次启动成功视为保活通过。
+
+当前已确认的任务 blocker：设备上的 `module/device/method/alasaos.py:149-154` 用 `type=VIRTUAL, ...displayId=数字` 正则解析 `dumpsys display`。Android 9 实际为 `type VIRTUAL`，编号位于独立 `mDisplayId=1` 行，导致命令返回空值。runner 在 `app_is_running → app_current_alasaos → alasaos_display_id` 抛出 `ScriptError: AlasAos virtual display not found: ''`。2026-10-01 经同一 22300 bridge 复核：原命令 code 0/stdout 空，而完整输出证实 VD 存在；因此不是游戏本体、网络或普通权限设置可修复的问题。手动 ADB 可将游戏 task 移到 display 1，display 0 Settings 可用；bridge 返回 1280×720 帧，但目视为黑/深灰占位，不能当作有效游戏帧。任务、有效游戏识别、输入及完整重启闭环均未通过。未改上游源码；符合 Issue #2 的候选 B 切换条件。
 
 ## 2.2 Candidate B：AzurPilot-for-Android
 

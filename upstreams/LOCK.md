@@ -64,3 +64,9 @@ Reality-audit notes at review time:
 - therefore Android 9 support is source/package support, not Node-01 live proof.
 - AzurPilot #1089 being closed is not fix evidence: it was closed because Android-backend bugs belong in the Android repo; the locked `4ac2ae...` code was re-read and still uses the reported failing `mCurrentFocus` logic.
 - ALAS-AOS uses the same focus signal first but has a `pidof` fallback, so the specific #1089 failure is not structurally identical there.
+
+## Node-01 artifact readback 2026-10-01
+
+The verified `AzurPilot-Android-1.2.11-arm64-v8a-full.apk` (same SHA-256 above) contains `assets/rootfs/BUILD_MANIFEST` with Android host `6f5eacb8d323bb1200969ad688a1a15d8e0889a5`, bundled AzurPilot `e96cf5fd8a25a08aab2fb6462d7abe6c7052ca7d`, rootfs `e96cf5fd8a25-26a9df495f`, ARM64 and Python 3.14.6. These are the installed artifact's runtime identifiers; the earlier `4ac2ae...` source review must not be described as its bundled commit. Reading `module/device/method/azurpilot_android.py` at the actual bundled commit confirms ping-based displayId discovery but still no pidof fallback in app-current.
+
+Official rolling release also lists 1.2.42. Host changes after the reviewed head concern update delivery, UI and build dependencies, with no observed VirtualDisplay/Root implementation fix in that comparison; Node-01 acceptance retained the reviewed 1.2.11 artifact. Installation succeeded using root local `pm install -r` after MIUI rejected streamed ADB installation. Runtime acceptance is recorded in docs/04-game-automation.md and Issue #2.

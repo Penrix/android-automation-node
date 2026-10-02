@@ -163,3 +163,10 @@ LIVE UNVERIFIED
 ```
 
 下一步离线工作只剩：保持两条游戏路线的版本/依赖信息对齐，不再增加自制框架。
+
+
+## 2026-10-02 Node-01 live checkpoint
+
+ALAS-AOS is no longer wholly live-unverified. On Redmi K20 Pro / Android 9, Shizuku shell created a 1280×720 virtual display and a reversible runtime compatibility override for Android-9 `dumpsys display` formatting let ALAS identify Display 10 and launch Azur Lane. The bridge returned a 1280×720 live game splash frame.
+
+The next gate failed exactly at virtual-display foreground recognition: ALAS logged an empty package after launch while Android ActivityManager showed `com.bilibili.azurlane` on Display 10. The scheduler was stopped before input or task execution. Keep Candidate A as **PARTIAL LIVE VERIFIED**, do not claim click/swipe, safe-task, physical-screen coexistence, stop-start persistence, or long-running stability. The task's stop condition prevents further in-place ALAS code changes in this run.

@@ -1,5 +1,7 @@
 # START HERE
 
+Current handoff (2026-11-17): read [docs/CURRENT-AUTOMATION.md](docs/CURRENT-AUTOMATION.md) and [Issue #3](https://github.com/Penrix/android-automation-node/issues/3) before interpreting the earlier execution plans. K20 and K80 have different privileges and verification status.
+
 This repository is the project-local operating entrypoint for the Android Automation Node.
 
 Do not load every document at once. Route by the current task.

@@ -1,5 +1,7 @@
 # android-automation-node
 
+> 当前交接请先读 [K20 / K80 自动化进度](docs/CURRENT-AUTOMATION.md)（2026-11-17）与 [Issue #3](https://github.com/Penrix/android-automation-node/issues/3)。下方早期阶段说明保留为历史；最新 AutoJs6、钱包、Epic、PDD 与游戏状态以交接页为准。
+
 一台长期在线、Root、固定环境的 Android 真机，不再只被当作“挂机手机”，而被当作一个可长期演进的 **Android Automation Node**。
 
 当前第一台节点是 Redmi K20 Pro。这个仓库保存的不只是脚本，也保存围绕这台节点形成的设计认知、决策过程、任务边界和后续实现。

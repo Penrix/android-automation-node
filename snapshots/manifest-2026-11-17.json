@@ -1,0 +1,177 @@
+{
+  "source": "local source snapshots; not a fresh device export",
+  "files": [
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-PDD/k80-probe.js",
+      "sha256": "6c2dbe5599f3ae9c07902db7fbb6d8fa319a625cc695767b2d70c99fde43cb57"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-PDD/pdd-accessibility.js",
+      "sha256": "27d384fc531e85e2fdec908497153f67aa827854a0733c990cf93bf3f3bf6ac6"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-PDD/pdd-coupon.js",
+      "sha256": "1a2d1317ae93e70ba8f37a4d2c5d6115d2d973252b177aa8938aa26da7c36b21"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-PDD/pdd-dry-run.js",
+      "sha256": "2744f6159018ce6e15557f65bdd72e1db98bf9168fbc41bd978dc65d1d15393d"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-PDD/pdd-policy.js",
+      "sha256": "5dde8e73250a79c4c6a518a2b802672b4032d9521dbc9fd06cb3e9d77a7a6e46"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-PDD/pdd-power.js",
+      "sha256": "ca10fe8b19887051f077e84f7ebee262220993ed8b197ff572f877c346adcbaf"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-PDD/pdd-ui.js",
+      "sha256": "a7e90348f6b3c7d18207f779dae898cfc1aae28208f5fbbae4d5d4b1a3be0489"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-Wallet/wallet-ad.js",
+      "sha256": "176b27b2cee0325ad015962ad6ded3474085cdc0a4a29536c2cfd580e12e8f84"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-Wallet/wallet-audit.js",
+      "sha256": "06ee24d617cf668822ae2da59af0218651ac961e863ae4758048a7da652e4740"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-Wallet/wallet-daily.js",
+      "sha256": "c1aaf95ce45986df59b6922a29a4902f8c531fa70c0520f19ce869c7c666e04e"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Node01-Wallet/wallet-download.js",
+      "sha256": "420d73ddcebef0b678bfefffbd655b505a6d36c3392320ba932c1146ba56e48c"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Penrix-Epic/epic-audit.js",
+      "sha256": "b891a6ec8346e154ad67f20a646a5163f8cfb656059700e1bfd34c6f4cdbe204"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Penrix-Epic/epic-claim.js",
+      "sha256": "1c202e9e8a55c60e1c3448122679ed739876a6317eaf2c14e63028646376d127"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/Penrix-Epic/epic-ui.js",
+      "sha256": "793541e4d47f32b4b8cadad03b20bed67955cfe2632fc29c49c850663520ecd1"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/register-k80.js",
+      "sha256": "bf438d8324540ca5a666302ee7f4f9fafe8bb4b04f561aa77b1d6ba6d77309f4"
+    },
+    {
+      "path": "snapshots/2026-11-16/k80/stop-epic-audit.js",
+      "sha256": "e2dd8740b667b2d203ba90b3ccff06ba0a42acb0d82c464e98524fde7be8a7cf"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/pdd/pdd-accessibility.js",
+      "sha256": "e8edfcb861ef19c5bb9907485898f6b7f0353fe3dace98bdff49cc4d4101b7c8"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/pdd/pdd-coupon.js",
+      "sha256": "487a5126cd2c61f5b12d0520fbd8bdb7fdd12391b96b29b6c56fe334b37059dd"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/pdd/pdd-dry-run.js",
+      "sha256": "2744f6159018ce6e15557f65bdd72e1db98bf9168fbc41bd978dc65d1d15393d"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/pdd/pdd-policy.js",
+      "sha256": "5dde8e73250a79c4c6a518a2b802672b4032d9521dbc9fd06cb3e9d77a7a6e46"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/pdd/pdd-power.js",
+      "sha256": "b6bb1d996f8a40f69410f9aed8be265ab0dfc56a1a8f21d24f00e05f8b581445"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/pdd/pdd-ui.js",
+      "sha256": "a7e90348f6b3c7d18207f779dae898cfc1aae28208f5fbbae4d5d4b1a3be0489"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/pdd/register-daily.js",
+      "sha256": "c76afc3791c3d37528920f14d04f391c22e9c9147d3500a5695c7e932a23d000"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/wallet/register-daily.js",
+      "sha256": "6d95c569199f85ab3293b1ebd8f98091857865394c3cb7af4ecc3dd10d99369e"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/wallet/wallet-ad.js",
+      "sha256": "0429117110f448fc0b46737db2df4bb4d4564dfdf3384b0e9307320094479ecf"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/wallet/wallet-download.js",
+      "sha256": "c6a90c9c6ca15f2429167e560f9fef6406f1e390ccb089b92d7e706dc91bbdb7"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/epic/epic-claim.js",
+      "sha256": "063339e1c63471c0a4bbb34f02bf325b799b67cba99d4f8609242fc40533110a"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/epic/epic-ui.js",
+      "sha256": "793541e4d47f32b4b8cadad03b20bed67955cfe2632fc29c49c850663520ecd1"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/epic/register-daily.js",
+      "sha256": "f7e732c476bb9c1e9a39c83023b0186363dee49d3d209a182c857f4452158053"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-campaign.js",
+      "sha256": "9b7c02833d0f5563b22ec6c41502662c2a1d9e6d3d04d50e400a89f4a44012c3"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-commission.js",
+      "sha256": "e3c0e80707d550a5d19a1c34a68b0cd9fc50037311dc466ce68818025b0ab884"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-main.js",
+      "sha256": "81fa4b1a05bbd8b6a835afe2fe447e6b35bfad3e8393309fa55bc20b6b4fa0b0"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-navigation.js",
+      "sha256": "ce41c9c6d37a5fb0c0f04f74969077eb428e29b56cb636d7f964bd5774f8c8fa"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-oil.js",
+      "sha256": "11840541ad5397145a30dd557956d7f84e3a9c95f4bfb0f626bcc84fc871f517"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-policy.js",
+      "sha256": "06916d53380c169a7103e85c0bae5d77560e9cbfc69177a8f631e57b1e54175e"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-port.js",
+      "sha256": "a91d86355a4fd6e8d00bb8e8709828cf0cfe2137d73da9e8f4c5f13702d226e0"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-retire.js",
+      "sha256": "825fd3add6cb6d5ebc40dafb8e4ff8c88c5f12db8e2060d9d7e2cc6d706fddea"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-runtime.js",
+      "sha256": "92056027041302d78709776b128d1a0f8dc0016363cf35352153aa36277e7241"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-shop.js",
+      "sha256": "1e8d7512a428ec292facd081eee88e6fb509091960f71a12eb0a3207233536be"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-startup.js",
+      "sha256": "86838544255c15b80a950ebac9a9dc083e160a57c90102071e07470cf620ec60"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/azur-supervisor.js",
+      "sha256": "8fdef18bd7bd0b9f403b4435b0336337c3053c83a240328dbdc4e3089fe7fdda"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/azur/碧蓝航线2-4挂机.js",
+      "sha256": "254ea0df544d5db9009d0a5127452ef55fab221eb142c5bc477ba6d6dfe1c1ee"
+    },
+    {
+      "path": "snapshots/2026-11-08/k20/wallet/wallet-daily.js",
+      "sha256": "b95e81a7339be9b6fd76539b3a3b2c2c936168b167e61af4ebc8d62762457f94"
+    }
+  ]
+}

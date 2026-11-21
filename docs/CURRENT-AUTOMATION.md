@@ -107,3 +107,9 @@ PDD 仅兑换目标 5 元无门槛券、100 积分；确认一天成功后跳过
 - 2026-11-21 15:42 +0800 真机实测：服务脚本与候选源码 SHA-256 一致，Root Runner 进程存在并写出 `root_runner_started` / `autojs_launch_requested`；约半分钟后 supervisor heartbeat 与设备当前时间相差不足一秒，未重复发起启动。当前前台仍是碧蓝航线，`last-run.sorties` 由 4 增至 5。
 - 原服务备份仍在手机 `/data/adb/service.d/penrix-azur-boot.sh.bak-20261121` 及 `/sdcard/Node01-RootRunner/backups/`。Root Runner 记录在 `/sdcard/Node01-RootRunner/events.jsonl` 与 `autojs-launch.log`；前台服务请求出现的 MIUI `Failed transaction` 不作为成功证据，主管心跳才是恢复成立的依据。
 - [Root Runner 源码与契约检查](../snapshots/2026-11-21/k20/root-runner/) 已回传。
+
+## 11 月 21 日 · K20 ALAS 式中断出击恢复
+
+- 不是移植 Android ALAS APK，而是抽取 ALAS 的状态语义：发现残留自律战斗时先撤退，本次战役结束，回到主恢复循环再从已知主页进入 2-4。
+- 此前 K20 真实发生过残留出击已撤退、却继续硬找主线入口并以 `Main story entry missing` 停止；Supervisor 约一分钟后才另起新运行。现在撤退成功抛出 `SORTIE_WITHDRAWN`，由当前引擎 10 秒后的既有恢复路径处理。
+- 2026-11-21 部署后未主动制造残留战斗验收，以免打断正常挂机；部署时当前运行仍在碧蓝航线前台，出击计数已由 7 到 8。该异常的实时复发验收待自然发生。40 项离线检查通过；手机旧版备份为 `/sdcard/Node01-Azur/backup-20261121-sortie-withdraw/`。

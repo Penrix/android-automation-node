@@ -10,10 +10,15 @@ function clearInterrupted(r){
 }
 function enter(r){
  r.scan();if(r.find(/^立刻前往$/)&&r.find(/^2[-－—]4(?:救援约克城)?$/)){r.tap(1226,178,'close_stage_detail');r.scan();}
- clearInterrupted(r);
+ if(clearInterrupted(r)){
+  var withdrawn=Error('Interrupted sortie withdrawn; restart from known home state');withdrawn.code='SORTIE_WITHDRAWN';throw withdrawn;
+ }
  if(!r.find(/^第2章$/)&&!r.find(/^主线$/)){
   require('./azur-navigation.js').home(r);
-  if(!r.word(/^出击$/)&&!r.button('MAIN_GOTO_CAMPAIGN'))throw Error('Campaign entry missing');r.scan();clearInterrupted(r);
+  if(!r.word(/^出击$/)&&!r.button('MAIN_GOTO_CAMPAIGN'))throw Error('Campaign entry missing');r.scan();
+  if(clearInterrupted(r)){
+   var withdrawnAfterHome=Error('Interrupted sortie withdrawn; restart from known home state');withdrawnAfterHome.code='SORTIE_WITHDRAWN';throw withdrawnAfterHome;
+  }
  }
  if(!r.find(/^第2章$/)){if(!r.word(/^主线$/))throw Error('Main story entry missing');r.scan();}
  if(r.find(/^普通$/)){r.word(/^普通$/);r.scan();}
@@ -60,3 +65,4 @@ function run(r){
  var error=Error('2-4 sortie timed out');error.code='GAME_STUCK';throw error;
 }
 module.exports={enter:enter,begin:begin,run:run,checkCapacity:checkCapacity};
+

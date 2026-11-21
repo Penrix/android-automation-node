@@ -99,3 +99,11 @@ PDD 仅兑换目标 5 元无门槛券、100 积分；确认一天成功后跳过
 - 钱包四个定时仍在。当天 08:30、11:05、14:30 均有启动日志。11:05 从钱包入口自动到账两笔，共 +0.64 天；桌面第三轮跳到小米应用商店详情时，旧脚本分开读取前台导致误判。已让入口使用与计时相同的 Root 窗口焦点，并将命中的应用传给下一步。只在现有广告流程支持的目标上继续。补跑时，桌面入口可进会员页，任务面板只有试用和邀请，第三笔未到账。新版跳转需下一次实际广告露出验证。
 - 游戏当天同一运行确认普通 2-4 结算三轮。船坞满后的奖励弹窗“获得道具”被识别为“获得道县”，导致旧脚本报退役结果未确认。已兼容该实机读数。另一条实际故障是返回出击时仍留有上次自律结算，现识别“合计获得奖励 / 离开 / 再次前往”后只点击离开，不把旧结算再计一次。钱包任务结束后守护自动恢复游戏，最新检查已通过登录及军事委托回查，留下一个钻石委托空位。
 - 两项最新源码均已部署并与 K20 读回逐字节一致。游戏 38 项、钱包 12 项本地检查通过。见 [游戏增量](../snapshots/2026-11-21/k20/azur/) 和 [钱包增量](../snapshots/2026-11-21/k20/wallet/)。没有更改原定时或替换游戏引擎。
+
+## 11 月 21 日 · K20 Root Runner 系统级恢复
+
+- K20 已有的 Magisk service.d 看门狗被收束为唯一 Root Runner：它只等待 Android 开机、检查 `/sdcard/Node01-Azur/supervisor-heartbeat`，并在 AutoJs6 或主管心跳缺失时请求启动 AutoJs6 前台服务与 `azur-supervisor.js`。
+- 钱包、Epic、拼多多的 AutoJs6 TimedTask 完全保留，Root Runner 不读取或复制任何业务排程；这样不会在每日任务占用前台时错误恢复游戏。旧的已观察 MIUI 无障碍 `DEAD` 假启用恢复也保留：同时满足 DEAD 服务、无有效 AccessibilityService、开机超过 120 秒时每天最多重启一次。
+- 2026-11-21 15:42 +0800 真机实测：服务脚本与候选源码 SHA-256 一致，Root Runner 进程存在并写出 `root_runner_started` / `autojs_launch_requested`；约半分钟后 supervisor heartbeat 与设备当前时间相差不足一秒，未重复发起启动。当前前台仍是碧蓝航线，`last-run.sorties` 由 4 增至 5。
+- 原服务备份仍在手机 `/data/adb/service.d/penrix-azur-boot.sh.bak-20261121` 及 `/sdcard/Node01-RootRunner/backups/`。Root Runner 记录在 `/sdcard/Node01-RootRunner/events.jsonl` 与 `autojs-launch.log`；前台服务请求出现的 MIUI `Failed transaction` 不作为成功证据，主管心跳才是恢复成立的依据。
+- [Root Runner 源码与契约检查](../snapshots/2026-11-21/k20/root-runner/) 已回传。
